@@ -25,7 +25,7 @@ function playAtIndex(idx, userInitiated){
   playerBar.classList.add('buffering');
   audioEl.src = currentAudioUrl(item);
   audioEl.playbackRate = state.playbackRate;
-  audioEl.play().then(()=>{ state.isPlaying = true; syncPlayingUI(); }).catch(()=>{ state.isPlaying = false; syncPlayingUI(); });
+  audioEl.play().then(()=>{ state.isPlaying = true; syncPlayingUI(); }).catch(()=>{ handlePlaybackFailure(idx); });
   document.getElementById('playerRef').textContent = `আয়াত ${toBn(item.numberInSurah)}`;
   document.getElementById('playerTitle').textContent = item.title;
   playerBar.classList.add('visible');
@@ -36,6 +36,41 @@ function playAtIndex(idx, userInitiated){
   const card = document.getElementById(`ayah-${item.key.replace(':','-')}`);
   if(card && userInitiated) card.scrollIntoView({behavior:'smooth', block:'center'});
   updateMediaSessionMetadata(item);
+}
+
+// Called whenever the current track fails to load/play (404 from the CDN,
+// no network, unsupported file, etc). Without this the spinner in the
+// player bar would spin forever with no feedback, which looks exactly like
+// "it just keeps loading and never plays".
+let playbackRetryCount = 0;
+function handlePlaybackFailure(idx){
+  playerBar.classList.remove('buffering');
+  state.isPlaying = false;
+  syncPlayingUI();
+  const autoplayChk = document.getElementById('autoplayChk');
+  // If we're auto-advancing through a surah, skip the broken ayah instead of
+  // getting stuck, but stop after a couple of consecutive failures so we
+  // don't silently loop through an entire offline/broken surah.
+  if(autoplayChk && autoplayChk.checked && playbackRetryCount < 2 && idx < state.playlist.length - 1){
+    playbackRetryCount++;
+    playAtIndex(idx + 1, false);
+    return;
+  }
+  playbackRetryCount = 0;
+  document.getElementById('playerRef').textContent = 'এই তিলাওয়াতটি লোড করা যায়নি';
+  showPlaybackError();
+}
+
+let playbackErrorTimer = null;
+function showPlaybackError(){
+  const ref = document.getElementById('playerRef');
+  if(!ref) return;
+  const original = ref.textContent;
+  ref.textContent = navigator.onLine === false
+    ? 'ইন্টারনেট সংযোগ নেই — এই আয়াতের অডিও লোড করা যায়নি'
+    : 'অডিও লোড করা যায়নি, একটু পর আবার চেষ্টা করুন বা ক্বারী বদলে দেখুন';
+  clearTimeout(playbackErrorTimer);
+  playbackErrorTimer = setTimeout(() => { if(ref.textContent.includes('লোড করা যায়নি')) ref.textContent = original; }, 4000);
 }
 
 function pausePlayback(){
@@ -195,6 +230,7 @@ async function downloadCurrentAudioForOffline(btn){
   markSurahOffline(surahNum);
 }
 
+let stallTimer = null;
 function initPlayer(){
   const reciterSelect = document.getElementById('reciterSelect');
   reciterSelect.innerHTML = reciters.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
@@ -237,9 +273,19 @@ function initPlayer(){
   });
   audioEl.addEventListener('pause', () => { if(state.isPlaying){ state.isPlaying=false; syncPlayingUI(); } });
   audioEl.addEventListener('play', () => { if(!state.isPlaying){ state.isPlaying=true; syncPlayingUI(); } });
-  audioEl.addEventListener('waiting', () => playerBar.classList.add('buffering'));
-  audioEl.addEventListener('playing', () => playerBar.classList.remove('buffering'));
-  audioEl.addEventListener('canplay', () => playerBar.classList.remove('buffering'));
+  audioEl.addEventListener('waiting', () => {
+    playerBar.classList.add('buffering');
+    // Safety net: if we're still "buffering" 15s later (dead link, CDN
+    // outage, stalled connection) treat it as a failure instead of leaving
+    // the spinner running indefinitely.
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(() => {
+      if(playerBar.classList.contains('buffering')) handlePlaybackFailure(state.playIndex);
+    }, 15000);
+  });
+  audioEl.addEventListener('playing', () => { playerBar.classList.remove('buffering'); clearTimeout(stallTimer); playbackRetryCount = 0; });
+  audioEl.addEventListener('canplay', () => { playerBar.classList.remove('buffering'); clearTimeout(stallTimer); });
+  audioEl.addEventListener('error', () => { clearTimeout(stallTimer); handlePlaybackFailure(state.playIndex); });
   audioEl.addEventListener('loadedmetadata', () => updatePositionState());
 
   document.getElementById('seekBar').addEventListener('input', (e) => {
