@@ -1,0 +1,250 @@
+// ---------- Audio playback engine ----------
+const audioEl = document.getElementById('audioEl');
+const playerBar = document.getElementById('playerBar');
+audioEl.preload = 'auto';
+// playsInline helps background/lock-screen playback behave and lets the
+// browser fully own buffering while the screen is locked.
+audioEl.setAttribute('playsinline', '');
+
+const SPEED_STEPS = [0.75, 1, 1.25, 1.5, 2];
+
+function fmtTime(sec){
+  if(!isFinite(sec) || sec < 0) sec = 0;
+  const m = Math.floor(sec/60), s = Math.floor(sec%60);
+  return toBn(m) + ':' + toBn(String(s).padStart(2,'0'));
+}
+
+function currentAudioUrl(item){
+  return `${AUDIO_CDN}/${state.reciter}/${item.globalNumber}.mp3`;
+}
+
+function playAtIndex(idx, userInitiated){
+  if(idx < 0 || idx >= state.playlist.length) return;
+  const item = state.playlist[idx];
+  state.playIndex = idx;
+  playerBar.classList.add('buffering');
+  audioEl.src = currentAudioUrl(item);
+  audioEl.playbackRate = state.playbackRate;
+  audioEl.play().then(()=>{ state.isPlaying = true; syncPlayingUI(); }).catch(()=>{ state.isPlaying = false; syncPlayingUI(); });
+  document.getElementById('playerRef').textContent = `আয়াত ${toBn(item.numberInSurah)}`;
+  document.getElementById('playerTitle').textContent = item.title;
+  playerBar.classList.add('visible');
+  state.lastRead = { surah: item.surah, ayah: item.numberInSurah };
+  saveLastRead();
+  addHistoryEntry({ surah: item.surah, title: item.title, ayah: item.numberInSurah, reciter: state.reciter, ts: Date.now() });
+  if(state.mode === 'history') renderHistoryList();
+  const card = document.getElementById(`ayah-${item.key.replace(':','-')}`);
+  if(card && userInitiated) card.scrollIntoView({behavior:'smooth', block:'center'});
+  updateMediaSessionMetadata(item);
+}
+
+function pausePlayback(){
+  audioEl.pause();
+  state.isPlaying = false;
+  syncPlayingUI();
+}
+
+function resumePlayback(){
+  if(state.playIndex === -1){ if(state.playlist.length){ playAtIndex(0, false); } return; }
+  audioEl.play().then(()=>{ state.isPlaying = true; syncPlayingUI(); }).catch(()=>{});
+}
+
+function syncPlayingUI(){
+  document.querySelectorAll('.ayah-card').forEach(c => c.classList.remove('playing'));
+  document.querySelectorAll('.play-toggle').forEach(b => { b.classList.remove('is-playing'); b.textContent = '▶ শুনুন'; });
+  if(state.playIndex >= 0){
+    const item = state.playlist[state.playIndex];
+    const card = document.querySelector(`.ayah-card[data-key="${item.key}"]`);
+    if(card){
+      const btn = card.querySelector('.play-toggle');
+      if(state.isPlaying){
+        card.classList.add('playing');
+        if(btn){ btn.classList.add('is-playing'); btn.textContent = '❚❚ চলছে'; }
+      }
+    }
+  }
+  const ppBtn = document.getElementById('playPauseBtn');
+  if(ppBtn){
+    ppBtn.classList.toggle('is-playing', state.isPlaying);
+    ppBtn.setAttribute('aria-label', state.isPlaying ? 'বিরতি দিন' : 'চালু করুন');
+  }
+  if('mediaSession' in navigator){
+    navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
+  }
+}
+
+// ---------- Media Session: lock-screen / notification controls so playback
+// keeps going and stays controllable when the phone is locked or the app is
+// backgrounded. ----------
+function updateMediaSessionMetadata(item){
+  if(!('mediaSession' in navigator)) return;
+  const reciterName = (reciters.find(r => r.id === state.reciter) || {}).name || '';
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: `আয়াত ${toBn(item.numberInSurah)} — ${item.title}`,
+    artist: reciterName,
+    album: 'কুরআন বাংলা',
+    artwork: [
+      { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }
+    ]
+  });
+}
+
+function initMediaSessionHandlers(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.setActionHandler('play', () => resumePlayback());
+  navigator.mediaSession.setActionHandler('pause', () => pausePlayback());
+  navigator.mediaSession.setActionHandler('previoustrack', () => {
+    if(state.playIndex > 0) playAtIndex(state.playIndex - 1, false);
+  });
+  navigator.mediaSession.setActionHandler('nexttrack', () => {
+    if(state.playIndex < state.playlist.length - 1) playAtIndex(state.playIndex + 1, false);
+  });
+  try{
+    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+      audioEl.currentTime = Math.max(0, audioEl.currentTime - (details.seekOffset || 10));
+    });
+    navigator.mediaSession.setActionHandler('seekforward', (details) => {
+      if(audioEl.duration) audioEl.currentTime = Math.min(audioEl.duration, audioEl.currentTime + (details.seekOffset || 10));
+    });
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+      if(details.seekTime != null && audioEl.duration) audioEl.currentTime = details.seekTime;
+    });
+    navigator.mediaSession.setActionHandler('stop', () => { pausePlayback(); });
+  }catch(e){ /* older browsers may not support every action */ }
+}
+
+function updatePositionState(){
+  if(!('mediaSession' in navigator) || !('setPositionState' in navigator.mediaSession)) return;
+  if(!audioEl.duration || !isFinite(audioEl.duration)) return;
+  try{
+    navigator.mediaSession.setPositionState({
+      duration: audioEl.duration,
+      playbackRate: audioEl.playbackRate,
+      position: Math.min(audioEl.currentTime, audioEl.duration)
+    });
+  }catch(e){}
+}
+
+// ---------- Playback speed ----------
+function applySpeedLabel(){
+  const btn = document.getElementById('speedBtn');
+  if(btn) btn.textContent = `${toBn(state.playbackRate)}x`;
+}
+function cycleSpeed(){
+  const idx = SPEED_STEPS.indexOf(state.playbackRate);
+  const next = SPEED_STEPS[(idx + 1 + SPEED_STEPS.length) % SPEED_STEPS.length];
+  state.playbackRate = next;
+  audioEl.playbackRate = next;
+  savePlaybackRate();
+  applySpeedLabel();
+}
+
+// ---------- Offline download of a whole surah/juz's audio ----------
+function offlineButtonLabel(done, total){
+  if(done == null) return '⬇ অফলাইনে সংরক্ষণ করুন';
+  if(done >= total) return '✓ অফলাইনে সংরক্ষিত হয়েছে';
+  return `ডাউনলোড হচ্ছে (${toBn(done)}/${toBn(total)})`;
+}
+
+async function downloadCurrentAudioForOffline(btn){
+  if(!state.playlist.length) return;
+  const surahNum = state.playlist[0].surah;
+  const urls = state.playlist.map(item => currentAudioUrl(item));
+  btn.disabled = true;
+  btn.textContent = offlineButtonLabel(0, urls.length);
+
+  // Prefer handing the batch to the service worker so it keeps downloading
+  // even if the user navigates to another surah mid-download.
+  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+    const requestId = `${surahNum}-${Date.now()}`;
+    const onMsg = (event) => {
+      const msg = event.data || {};
+      if(msg.requestId !== requestId) return;
+      if(msg.type === 'CACHE_AUDIO_PROGRESS'){
+        btn.textContent = offlineButtonLabel(msg.done, msg.total);
+      } else if(msg.type === 'CACHE_AUDIO_DONE'){
+        btn.textContent = offlineButtonLabel(msg.total, msg.total);
+        btn.classList.add('downloaded');
+        markSurahOffline(surahNum);
+        navigator.serviceWorker.removeEventListener('message', onMsg);
+      }
+    };
+    navigator.serviceWorker.addEventListener('message', onMsg);
+    navigator.serviceWorker.controller.postMessage({ type: 'CACHE_AUDIO', urls, requestId });
+    return;
+  }
+
+  // Fallback: cache directly from the page if there's no active service worker.
+  if(!('caches' in window)){ btn.textContent = '⬇ অফলাইন মোড সমর্থিত নয়'; return; }
+  const cache = await caches.open(AUDIO_CACHE_NAME);
+  let done = 0;
+  for(const url of urls){
+    try{
+      const existing = await cache.match(url);
+      if(!existing){
+        const res = await fetch(url, { mode: 'cors' });
+        if(res.ok) await cache.put(url, res.clone());
+      }
+    }catch(e){ /* skip and continue */ }
+    done++;
+    btn.textContent = offlineButtonLabel(done, urls.length);
+  }
+  btn.textContent = offlineButtonLabel(urls.length, urls.length);
+  btn.classList.add('downloaded');
+  markSurahOffline(surahNum);
+}
+
+function initPlayer(){
+  const reciterSelect = document.getElementById('reciterSelect');
+  reciterSelect.innerHTML = reciters.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+  reciterSelect.value = state.reciter;
+
+  reciterSelect.addEventListener('change', () => {
+    state.reciter = reciterSelect.value;
+    saveReciter();
+    if(state.playIndex >= 0 && state.isPlaying){ playAtIndex(state.playIndex, true); }
+  });
+
+  document.getElementById('playPauseBtn').onclick = () => { state.isPlaying ? pausePlayback() : resumePlayback(); };
+  document.getElementById('prevBtn').onclick = () => { if(state.playIndex > 0) playAtIndex(state.playIndex - 1, true); };
+  document.getElementById('nextBtn').onclick = () => { if(state.playIndex < state.playlist.length - 1) playAtIndex(state.playIndex + 1, true); };
+  document.getElementById('playerClose').onclick = () => {
+    audioEl.pause(); audioEl.removeAttribute('src');
+    state.isPlaying=false; state.playIndex=-1;
+    playerBar.classList.remove('visible');
+    syncPlayingUI();
+  };
+  const speedBtn = document.getElementById('speedBtn');
+  if(speedBtn){ speedBtn.onclick = cycleSpeed; applySpeedLabel(); }
+
+  audioEl.addEventListener('ended', () => {
+    const autoplayChk = document.getElementById('autoplayChk');
+    if(autoplayChk.checked && state.playIndex < state.playlist.length - 1){
+      playAtIndex(state.playIndex + 1, false);
+    } else {
+      state.isPlaying = false;
+      syncPlayingUI();
+    }
+  });
+  audioEl.addEventListener('timeupdate', () => {
+    document.getElementById('curTime').textContent = fmtTime(audioEl.currentTime);
+    if(audioEl.duration){
+      document.getElementById('seekBar').value = (audioEl.currentTime / audioEl.duration) * 100;
+      document.getElementById('durTime').textContent = fmtTime(audioEl.duration);
+    }
+    updatePositionState();
+  });
+  audioEl.addEventListener('pause', () => { if(state.isPlaying){ state.isPlaying=false; syncPlayingUI(); } });
+  audioEl.addEventListener('play', () => { if(!state.isPlaying){ state.isPlaying=true; syncPlayingUI(); } });
+  audioEl.addEventListener('waiting', () => playerBar.classList.add('buffering'));
+  audioEl.addEventListener('playing', () => playerBar.classList.remove('buffering'));
+  audioEl.addEventListener('canplay', () => playerBar.classList.remove('buffering'));
+  audioEl.addEventListener('loadedmetadata', () => updatePositionState());
+
+  document.getElementById('seekBar').addEventListener('input', (e) => {
+    if(audioEl.duration) audioEl.currentTime = (e.target.value/100) * audioEl.duration;
+  });
+
+  initMediaSessionHandlers();
+}
