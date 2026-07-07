@@ -472,10 +472,122 @@ main{flex:1;min-width:0;padding:22px 28px calc(40px + var(--player-h));width:100
   padding:13px 20px;font-family:'Hind Siliguri',sans-serif;font-size:14.5px;color:var(--ink);cursor:pointer;
 }
 .drawer-item:hover{background:var(--panel);}
-.di-ic{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.di-ic{font-size:15px;width:20px;text-align:center;flex-shrink:0;color:var(--gold);}
 .di-badge{margin-left:auto;background:#C0392B;color:#fff;font-size:11px;border-radius:999px;padding:2px 7px;}
 .drawer-social{display:flex;justify-content:space-around;padding:14px 16px 4px;border-top:1px solid var(--line);}
-.drawer-social a{text-decoration:none;font-size:18px;}
+.drawer-social a{text-decoration:none;font-size:19px;color:var(--ink-soft);transition:color .15s;}
+.drawer-social a:hover{color:var(--gold);}
+
+/* ---- Generic full-screen modal (Settings / Prayer times / Dictionary / Help) ---- */
+.app-modal{
+  position:fixed;inset:0;background:rgba(10,20,17,.55);z-index:65;display:flex;
+  justify-content:center;align-items:flex-start;padding:70px 16px 16px;
+}
+.app-modal-box{
+  background:var(--parchment);width:100%;max-width:640px;border-radius:var(--radius);
+  max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.3);
+}
+.app-modal-head{
+  padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+}
+.app-modal-head h3{margin:0;font-family:'Noto Serif Bengali',serif;font-size:16px;display:flex;align-items:center;gap:9px;color:var(--ink);}
+.app-modal-head h3 i{color:var(--gold);font-size:15px;}
+.app-modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);}
+.app-modal-body{overflow-y:auto;padding:14px 18px 20px;}
+.app-modal-search{
+  display:flex;align-items:center;gap:8px;background:var(--panel);border-radius:999px;
+  padding:9px 14px;margin:12px 18px 0;color:var(--ink-soft);flex-shrink:0;
+}
+.app-modal-search input{border:none;background:none;outline:none;font-family:'Hind Siliguri',sans-serif;font-size:13.5px;color:var(--ink);flex:1;}
+
+/* ---- Settings rows ---- */
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 2px;
+  border-bottom:1px solid var(--line);
+}
+.settings-row:last-child{border-bottom:none;}
+.settings-label{font-size:14px;color:var(--ink);}
+.settings-control{display:flex;align-items:center;gap:8px;}
+.settings-control select{
+  background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  padding:7px 10px;font-family:'Hind Siliguri',sans-serif;font-size:13px;max-width:160px;
+}
+.settings-btn{
+  display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);
+  color:var(--ink);border-radius:8px;padding:7px 12px;font-family:'Hind Siliguri',sans-serif;font-size:13px;cursor:pointer;
+}
+.lang-toggle{display:flex;background:var(--sage);border-radius:999px;padding:3px;}
+.lang-toggle button{
+  border:none;background:none;padding:6px 14px;border-radius:999px;font-family:'Hind Siliguri',sans-serif;
+  font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+}
+.lang-toggle button.active{background:var(--teal);color:var(--sage);}
+.switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.switch-slider{
+  position:absolute;cursor:pointer;inset:0;background:var(--line);border-radius:999px;transition:.2s;
+}
+.switch-slider::before{
+  content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;
+}
+.switch input:checked + .switch-slider{background:var(--teal);}
+.switch input:checked + .switch-slider::before{transform:translateX(18px);}
+
+/* ---- Prayer times ---- */
+.prayer-status{text-align:center;padding:20px;color:var(--ink-soft);font-size:14px;}
+.prayer-location{font-size:13px;color:var(--ink-soft);text-align:center;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.prayer-next-card{
+  background:var(--teal);color:var(--sage);border-radius:var(--radius);padding:16px 18px;text-align:center;margin-bottom:16px;
+}
+.prayer-next-label{font-size:12px;opacity:.75;margin-bottom:4px;}
+.prayer-next-name{font-family:'Noto Serif Bengali',serif;font-size:20px;color:var(--gold);margin-bottom:2px;}
+.prayer-next-countdown{font-size:13.5px;letter-spacing:.3px;}
+.prayer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.prayer-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 8px;text-align:center;
+}
+.prayer-card.current{border-color:var(--gold);background:var(--gold-soft);}
+.prayer-card-ic{font-size:15px;color:var(--gold);margin-bottom:4px;}
+.prayer-card-name{font-size:12.5px;color:var(--ink-soft);margin-bottom:2px;}
+.prayer-card-time{font-family:'Noto Serif Bengali',serif;font-size:15px;color:var(--ink);}
+.prayer-manual-row{display:flex;gap:8px;margin-top:16px;}
+.prayer-manual-row input{
+  flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px;
+  font-family:'Hind Siliguri',sans-serif;font-size:13px;color:var(--ink);
+}
+.prayer-manual-row button{
+  background:var(--teal);color:var(--sage);border:none;border-radius:8px;padding:9px 16px;
+  font-family:'Hind Siliguri',sans-serif;font-size:13px;cursor:pointer;flex-shrink:0;
+}
+.prayer-error{color:#C0392B;font-size:13px;text-align:center;padding:10px 0;}
+
+/* ---- Dictionary ---- */
+.dict-item{padding:12px 4px;border-bottom:1px solid var(--line);}
+.dict-item:last-child{border-bottom:none;}
+.dict-term{font-family:'Noto Serif Bengali',serif;font-size:15px;color:var(--gold);margin-bottom:3px;}
+[data-theme="dark"] .dict-term{color:var(--gold);}
+.dict-meaning{font-size:13.5px;color:var(--ink);line-height:1.5;}
+.dict-empty{text-align:center;color:var(--ink-soft);padding:24px;font-size:13.5px;}
+
+/* ---- Help & support ---- */
+.help-section{margin-bottom:18px;}
+.help-section-title{font-size:12.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.help-faq{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.help-faq-q{
+  padding:12px 14px;background:var(--panel);cursor:pointer;font-size:13.5px;font-weight:600;color:var(--ink);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.help-faq-a{padding:0 14px;max-height:0;overflow:hidden;font-size:13px;color:var(--ink-soft);line-height:1.6;transition:max-height .2s ease,padding .2s ease;}
+.help-faq.open .help-faq-a{padding:12px 14px;max-height:300px;}
+.help-faq.open .help-faq-q i{transform:rotate(180deg);}
+.help-contact-row{display:flex;gap:10px;flex-wrap:wrap;}
+.help-contact-btn{
+  display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;text-decoration:none;color:var(--ink);font-size:13px;flex:1;min-width:140px;
+}
+.help-contact-btn i{color:var(--gold);font-size:15px;}
+.help-contact-btn:hover{background:var(--sage);}
 
 /* ---- Toast ---- */
 .app-toast{
