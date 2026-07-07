@@ -1,7 +1,7 @@
 {
-  "name": "কুরআন বাংলা — পড়ুন, শুনুন, খুঁজুন, বুঝুন",
-  "short_name": "কুরআন বাংলা",
-  "description": "অফলাইনেও কুরআনের আরবি টেক্সট, বাংলা অনুবাদ ও তিলাওয়াত শুনুন।",
+  "name": "Quran in Bangla — Read, Listen, Search, Understand",
+  "short_name": "Al Quran",
+  "description": "Listen to the Quran's Arabic text, Bengali translation, and recitation even offline.",
   "start_url": "./index.html",
   "scope": "./",
   "id": "./index.html",
