@@ -67,10 +67,10 @@ function showPlaybackError(){
   if(!ref) return;
   const original = ref.textContent;
   ref.textContent = navigator.onLine === false
-    ? 'ইন্টারনেট সংযোগ নেই — এই আয়াতের অডিও লোড করা যায়নি'
-    : 'অডিও লোড করা যায়নি, একটু পর আবার চেষ্টা করুন বা ক্বারী বদলে দেখুন';
+    ? 'No internet connection — audio for this verse could not be loaded.'
+    : 'The audio could not be loaded, please try again later or change the reciter.';
   clearTimeout(playbackErrorTimer);
-  playbackErrorTimer = setTimeout(() => { if(ref.textContent.includes('লোড করা যায়নি')) ref.textContent = original; }, 4000);
+  playbackErrorTimer = setTimeout(() => { if(ref.textContent.includes('Could not load.')) ref.textContent = original; }, 4000);
 }
 
 function pausePlayback(){
@@ -86,7 +86,7 @@ function resumePlayback(){
 
 function syncPlayingUI(){
   document.querySelectorAll('.ayah-card').forEach(c => c.classList.remove('playing'));
-  document.querySelectorAll('.play-toggle').forEach(b => { b.classList.remove('is-playing'); b.textContent = '▶ শুনুন'; });
+  document.querySelectorAll('.play-toggle').forEach(b => { b.classList.remove('is-playing'); b.textContent = '▶ Listen.'; });
   if(state.playIndex >= 0){
     const item = state.playlist[state.playIndex];
     const card = document.querySelector(`.ayah-card[data-key="${item.key}"]`);
@@ -94,14 +94,14 @@ function syncPlayingUI(){
       const btn = card.querySelector('.play-toggle');
       if(state.isPlaying){
         card.classList.add('playing');
-        if(btn){ btn.classList.add('is-playing'); btn.textContent = '❚❚ চলছে'; }
+        if(btn){ btn.classList.add('is-playing'); btn.textContent = '❚❚ Ongoing'; }
       }
     }
   }
   const ppBtn = document.getElementById('playPauseBtn');
   if(ppBtn){
     ppBtn.classList.toggle('is-playing', state.isPlaying);
-    ppBtn.setAttribute('aria-label', state.isPlaying ? 'বিরতি দিন' : 'চালু করুন');
+    ppBtn.setAttribute('aria-label', state.isPlaying ? 'Pause' : 'Turn on');
   }
   if('mediaSession' in navigator){
     navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
@@ -177,9 +177,9 @@ function cycleSpeed(){
 
 // ---------- Offline download of a whole surah/juz's audio ----------
 function offlineButtonLabel(done, total){
-  if(done == null) return '⬇ অফলাইনে সংরক্ষণ করুন';
-  if(done >= total) return '✓ অফলাইনে সংরক্ষিত হয়েছে';
-  return `ডাউনলোড হচ্ছে (${toBn(done)}/${toBn(total)})`;
+  if(done == null) return '⬇ Save offline';
+  if(done >= total) return '✓ Saved offline';
+  return `Downloading (${toBn(done)}/${toBn(total)})`;
 }
 
 async function downloadCurrentAudioForOffline(btn){
@@ -213,7 +213,7 @@ async function downloadCurrentAudioForOffline(btn){
   }
 
   // Fallback: cache directly from the page if there's no active service worker.
-  if(!('caches' in window)){ btn.textContent = '⬇ অফলাইন মোড সমর্থিত নয়'; return; }
+  if(!('caches' in window)){ btn.textContent = '⬇ Offline mode is not supported.'; return; }
   const cache = await caches.open(AUDIO_CACHE_NAME);
   let done = 0;
   for(const url of urls){
