@@ -3,7 +3,7 @@ const mainContent = document.getElementById('mainContent');
 const readerToolbar = document.getElementById('readerToolbar');
 
 function showLoader(){
-  mainContent.innerHTML = `<div class="loader"><div class="spinner"></div><span>আয়াত লোড হচ্ছে...</span></div>`;
+  mainContent.innerHTML = `<div class="loader"><div class="spinner"></div><span>Loading verses...</span></div>`;
   readerToolbar.style.display='none';
 }
 
@@ -15,7 +15,7 @@ function renderHero(){
     resumeHtml = `<div class="resume-card" id="resumeCard">
       <div class="ic">▶</div>
       <div>
-        <div class="rc-label">পড়া চালিয়ে যান</div>
+        <div class="rc-label">Continue reading</div>
         <div class="rc-title">${title} — আয়াত ${toBn(state.lastRead.ayah)}</div>
       </div>
     </div>`;
@@ -61,15 +61,15 @@ async function openSurah(num){
     state.lastRead = { surah: num, ayah: ayahs[0] ? ayahs[0].numberInSurah : 1 };
     saveLastRead();
   }catch(e){
-    mainContent.innerHTML = `<div class="error-box">${offlineAwareErrorMsg('সূরা')}<br><button onclick="openSurah(${num})">আবার চেষ্টা করুন</button></div>`;
+    mainContent.innerHTML = `<div class="error-box">${offlineAwareErrorMsg('সূরা')}<br><button onclick="openSurah(${num})">Try again.</button></div>`;
   }
 }
 
 function offlineAwareErrorMsg(label){
   if(typeof navigator !== 'undefined' && navigator.onLine === false){
-    return `আপনি এখন অফলাইনে আছেন এবং এই ${label}টি আগে সংরক্ষণ করা হয়নি, তাই লোড করা যায়নি। ইন্টারনেট সংযোগ পেলে আবার চেষ্টা করুন।`;
+    return `You are now offline and this ${label} The file was not previously saved, so it could not be loaded. Please try again when you have an internet connection.`;
   }
-  return `${label} লোড করা যায়নি, ইন্টারনেট সংযোগ পরীক্ষা করুন।`;
+  return `${label} Could not load, check internet connection.`;
 }
 
 async function openJuz(num){
@@ -104,7 +104,7 @@ function renderReader({header, showBismillah, ayahs}){
     <div class="meta">${header.meta}</div>
     <div class="header-btn-row">
       <button class="play-all-btn" id="playAllBtn">▶ ${header.playLabel}</button>
-      <button class="offline-btn${alreadyOffline ? ' downloaded' : ''}" id="offlineBtn">${alreadyOffline ? '✓ অফলাইনে সংরক্ষিত হয়েছে' : '⬇ অফলাইনে সংরক্ষণ করুন'}</button>
+      <button class="offline-btn${alreadyOffline ? ' downloaded' : ''}" id="offlineBtn">${alreadyOffline ? '✓ Saved offline' : '⬇ Save offline'}</button>
     </div>
   </div>`;
   if(showBismillah) html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
@@ -120,8 +120,8 @@ function renderReader({header, showBismillah, ayahs}){
         <div class="ar-text">${a.arabic}</div>
         <div class="bn-text">${a.bengali}</div>
         <div class="ayah-actions">
-          <button class="play-toggle" data-key="${key}">▶ শুনুন</button>
-          <button class="${isBookmarked?'bookmarked':''}" onclick="toggleBookmark('${key}', this)">${isBookmarked?'★ সংরক্ষিত':'☆ সংরক্ষণ করুন'}</button>
+          <button class="play-toggle" data-key="${key}">▶ Listen.</button>
+          <button class="${isBookmarked?'bookmarked':''}" onclick="toggleBookmark('${key}', this)">${isBookmarked?'★ Reserved':'☆ Save'}</button>
         </div>
       </div>
     </div>`;
@@ -152,8 +152,8 @@ function starSvg(){
 // Bookmarks are stored via localStorage (see storage.js) so starred ayahs
 // stay saved on the user's own device between visits.
 function toggleBookmark(key, btn){
-  if(state.bookmarks[key]){ delete state.bookmarks[key]; btn.classList.remove('bookmarked'); btn.textContent='☆ সংরক্ষণ করুন'; }
-  else { state.bookmarks[key] = true; btn.classList.add('bookmarked'); btn.textContent='★ সংরক্ষিত'; }
+  if(state.bookmarks[key]){ delete state.bookmarks[key]; btn.classList.remove('bookmarked'); btn.textContent='☆ Save'; }
+  else { state.bookmarks[key] = true; btn.classList.add('bookmarked'); btn.textContent='★ Reserved'; }
   saveBookmarks();
   if(state.mode === 'bookmarks') renderBookmarksList();
 }
