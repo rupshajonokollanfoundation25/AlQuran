@@ -4,7 +4,7 @@ function initTheme(){
     const body = document.body;
     const dark = body.getAttribute('data-theme') === 'dark';
     body.setAttribute('data-theme', dark ? 'light' : 'dark');
-    document.getElementById('themeLabel').textContent = dark ? 'নাইট মোড' : 'ডে মোড';
+    document.getElementById('themeLabel').textContent = dark ? 'night mode' : 'light mode';
   };
 }
 
@@ -20,7 +20,7 @@ function initConnectionStatus(){
   if(!pill) return;
   const update = () => {
     const online = navigator.onLine;
-    pill.textContent = online ? '' : '⚠ অফলাইন';
+    pill.textContent = online ? '' : '⚠ You Are Offline';
     pill.classList.toggle('visible', !online);
   };
   window.addEventListener('online', update);
