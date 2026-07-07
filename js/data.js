@@ -68,21 +68,21 @@ const reciters = [
 // TODO(Imran): এই লিংকগুলো আপনার আসল ওয়েবসাইট, ফেসবুক পেজ এবং ইউটিউব চ্যানেলের
 // ঠিকানা দিয়ে পরিবর্তন করে নিন।
 const SOCIAL_LINKS = {
-  website: 'https://example.com',
-  facebook: 'https://facebook.com/yourpage',
-  youtube: 'https://youtube.com/@yourchannel'
+  website: 'https://rupshajf.vercel.app/',
+  facebook: 'https://facebook.com/rupshajonokollanfoundation',
+  youtube: 'https://youtube.com/@রূপসাজনকল্যাণফাউন্ডেশন'
 };
 
 // ---------- Prayer time calculation methods (Aladhan API) ----------
 const PRAYER_METHODS = [
-  { id: 1,  name: 'ইউনিভার্সিটি অব ইসলামিক সায়েন্সেস, করাচি' },
+  { id: 1,  name: 'University of Islamic Sciences, Karachi' },
   { id: 3,  name: 'Muslim World League' },
-  { id: 2,  name: 'ISNA (উত্তর আমেরিকা)' },
-  { id: 4,  name: 'উম্মুল কুরা, মক্কা' },
-  { id: 5,  name: 'মিশরীয় সাধারণ জরিপ কর্তৃপক্ষ' },
-  { id: 8,  name: 'উপসাগরীয় অঞ্চল' },
-  { id: 13, name: 'দিয়ানেত, তুরস্ক' },
-  { id: 20, name: 'কেমেনাগ, ইন্দোনেশিয়া' }
+  { id: 2,  name: 'ISNA (North America)' },
+  { id: 4,  name: 'Umm al-Qura, Mecca' },
+  { id: 5,  name: 'Egyptian General Survey Authority' },
+  { id: 8,  name: 'Gulf Region' },
+  { id: 13, name: 'Diyanet, Turkey' },
+  { id: 20, name: 'Kemenag, Indonesia' }
 ];
 
 // ---------- Simple built-in Islamic / Qur'anic term dictionary ----------
