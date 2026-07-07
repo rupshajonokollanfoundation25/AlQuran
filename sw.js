@@ -48,8 +48,8 @@ async function cacheAudioBatch(urls, requestId) {
     try {
       const existing = await cache.match(url);
       if (!existing) {
-        const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
-        if (res && res.ok) await cache.put(url, res.clone());
+        const res = await fetch(url, { mode: 'no-cors', credentials: 'omit' });
+        if (res) await cache.put(url, res.clone());
       }
     } catch (e) { /* skip failed ayah, continue with the rest */ }
     done++;
@@ -133,8 +133,17 @@ async function cacheFirstAudio(req) {
   const cached = await cache.match(req);
   if (cached) return cached;
   try {
-    const res = await fetch(req.url, { mode: 'cors', credentials: 'omit' });
-    if (res && res.ok) cache.put(req.url, res.clone());
+    // IMPORTANT: do NOT force mode:'cors' here. The reciter CDN does not
+    // reliably send Access-Control-Allow-Origin, so a cors-mode fetch fails
+    // for every single request (every surah, every reciter) and we'd fall
+    // into the catch below every time, which is exactly why playback used
+    // to just hang on "loading" forever. no-cors matches how an <audio>
+    // element would fetch it directly and returns a playable opaque
+    // response even without CORS headers.
+    const res = await fetch(req.url, { mode: 'no-cors', credentials: 'omit' });
+    // Opaque (no-cors) responses always report status 0 / ok:false, so we
+    // can't check res.ok — just cache whatever we got back.
+    if (res) cache.put(req.url, res.clone());
     return res;
   } catch (e) {
     return new Response('', { status: 503, statusText: 'Offline - অডিও পাওয়া যায়নি' });
