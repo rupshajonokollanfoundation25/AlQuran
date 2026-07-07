@@ -56,6 +56,7 @@ function loadPrefs(){
   try{
     const raw = localStorage.getItem(LS_KEYS.offlineSurahs);
     state.offlineSurahs = raw ? JSON.parse(raw) : [];
+    migrateOfflineSurahs();
   }catch(e){ state.offlineSurahs = []; }
 
   try{
@@ -89,14 +90,51 @@ function addHistoryEntry(entry){
 }
 
 // ---------- Offline-downloaded surah tracking ----------
-function markSurahOffline(surahNum){
-  if(!state.offlineSurahs.includes(surahNum)){
-    state.offlineSurahs.push(surahNum);
-    try{ localStorage.setItem(LS_KEYS.offlineSurahs, JSON.stringify(state.offlineSurahs)); }catch(e){}
-  }
+// Each entry: { surah, reciter, urls, ayahCount, ts }. `urls` is kept so a
+// download can later be removed cleanly from Cache Storage. Older versions
+// of this app stored offlineSurahs as a plain array of numbers — migrate
+// those transparently to the new object shape (with no urls, so removal
+// just clears the tracking entry, not the cache; harmless).
+function migrateOfflineSurahs(){
+  if(!Array.isArray(state.offlineSurahs)){ state.offlineSurahs = []; return; }
+  const cleaned = state.offlineSurahs
+    .map(o => typeof o === 'number' ? { surah:o, reciter:null, urls:[], ayahCount:null, ts:Date.now() } : o)
+    .filter(o => o && Number.isInteger(o.surah) && o.surah >= 1 && o.surah <= 114)
+    .map(o => ({
+      surah: o.surah,
+      reciter: (typeof o.reciter === 'string' && o.reciter) ? o.reciter : null,
+      urls: Array.isArray(o.urls) ? o.urls : [],
+      ayahCount: (typeof o.ayahCount === 'number' && o.ayahCount > 0) ? o.ayahCount : null,
+      ts: (typeof o.ts === 'number' && isFinite(o.ts)) ? o.ts : Date.now()
+    }));
+  state.offlineSurahs = cleaned;
+  // Persist the sanitized shape immediately so this cleanup only has to run
+  // once — any leftover/broken entries from earlier testing won't keep
+  // reappearing on every load.
+  try{ localStorage.setItem(LS_KEYS.offlineSurahs, JSON.stringify(state.offlineSurahs)); }catch(e){}
+}
+function findOfflineEntry(surahNum){
+  return state.offlineSurahs.find(o => o.surah === surahNum);
+}
+function markSurahOffline(surahNum, reciter, urls, ayahCount){
+  if(!Number.isInteger(surahNum) || surahNum < 1 || surahNum > 114) return;
+  state.offlineSurahs = state.offlineSurahs.filter(o => o.surah !== surahNum);
+  state.offlineSurahs.push({ surah: surahNum, reciter: reciter || null, urls: urls || [], ayahCount: ayahCount || null, ts: Date.now() });
+  try{ localStorage.setItem(LS_KEYS.offlineSurahs, JSON.stringify(state.offlineSurahs)); }catch(e){}
 }
 function isSurahOffline(surahNum){
-  return state.offlineSurahs.includes(surahNum);
+  return state.offlineSurahs.some(o => o.surah === surahNum);
+}
+async function removeSurahOffline(surahNum){
+  const entry = findOfflineEntry(surahNum);
+  if(entry && entry.urls && entry.urls.length && 'caches' in window){
+    try{
+      const cache = await caches.open(AUDIO_CACHE_NAME);
+      await Promise.all(entry.urls.map(u => cache.delete(u)));
+    }catch(e){ /* cache may already be gone; tracking entry is removed regardless */ }
+  }
+  state.offlineSurahs = state.offlineSurahs.filter(o => o.surah !== surahNum);
+  try{ localStorage.setItem(LS_KEYS.offlineSurahs, JSON.stringify(state.offlineSurahs)); }catch(e){}
 }
 
 // ---------- Relative time in Bengali, for the history list ----------
