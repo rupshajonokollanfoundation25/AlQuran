@@ -140,7 +140,7 @@ async function removeSurahOffline(surahNum){
 // ---------- Relative time in Bengali, for the history list ----------
 function timeAgoBn(ts){
   const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
-  if(diffSec < 60) return 'এইমাত্র';
+  if(diffSec < 60) return 'Just now';
   const diffMin = Math.floor(diffSec / 60);
   if(diffMin < 60) return `${toBn(diffMin)} Minutes ago`;
   const diffHr = Math.floor(diffMin / 60);
