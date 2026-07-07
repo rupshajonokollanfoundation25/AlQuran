@@ -93,6 +93,50 @@ function renderHistoryList(){
   });
 }
 
+// Shows surahs that have been downloaded for offline listening, so the
+// user can see at a glance what's actually saved on this device (and undo
+// a download to free up space) — separate from the plain surah/juz lists.
+function renderOfflineList(){
+  if(!state.offlineSurahs.length){
+    listContainer.innerHTML = `<div class="empty-list-msg">এখনও কোনো সূরা অফলাইনে সংরক্ষণ করা হয়নি।<br>একটি সূরা খুলে "⬇ অফলাইনে সংরক্ষণ করুন" বাটনে চাপুন।</div>`;
+    return;
+  }
+  const sorted = [...state.offlineSurahs].sort((a,b) => b.ts - a.ts);
+  listContainer.innerHTML = '';
+  sorted.forEach(entry => {
+    const s = state.surahList.find(x => x.number === entry.surah);
+    const title = s ? (surahNamesBn[entry.surah-1] || s.englishName) : ('সূরা ' + entry.surah);
+    const reciterName = (reciters.find(r => r.id === entry.reciter) || {}).name || '';
+    const ayahCount = entry.ayahCount || (s ? s.numberOfAyahs : null);
+    const item = document.createElement('div');
+    item.className = 'list-item offline-item';
+    item.innerHTML = `<div class="badge-num">${toBn(entry.surah)}</div>
+      <div class="li-text">
+        <div class="li-title">${title} <span class="offline-dot" title="অফলাইনে সংরক্ষিত">⬇</span></div>
+        <div class="li-sub">${ayahCount ? toBn(ayahCount) + ' আয়াত' : ''}${reciterName ? ' · ' + reciterName : ''}</div>
+      </div>
+      <div class="li-meta">${timeAgoBn(entry.ts)}</div>
+      <button class="offline-remove-btn" title="অফলাইন থেকে মুছুন">মুছুন</button>`;
+    item.querySelector('.li-text').onclick = () => { openSurah(entry.surah); closeSidebarMobile(); };
+    item.querySelector('.badge-num').onclick = () => { openSurah(entry.surah); closeSidebarMobile(); };
+    item.querySelector('.offline-remove-btn').onclick = async (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      btn.textContent = 'মুছে ফেলা হচ্ছে...';
+      await removeSurahOffline(entry.surah);
+      renderOfflineList();
+      const openOfflineBtn = document.getElementById('offlineBtn');
+      if(openOfflineBtn && state.playlist.length && state.playlist[0].surah === entry.surah){
+        openOfflineBtn.classList.remove('downloaded');
+        openOfflineBtn.disabled = false;
+        openOfflineBtn.textContent = '⬇ অফলাইনে সংরক্ষণ করুন';
+      }
+    };
+    listContainer.appendChild(item);
+  });
+}
+
 function markSelected(idx){
   document.querySelectorAll('.list-item').forEach((el,i)=>el.classList.toggle('selected', i===idx));
 }
@@ -118,10 +162,15 @@ function initSidebarTabs(){
     setActiveTab('tabHistory');
     renderHistoryList();
   };
+  document.getElementById('tabOffline').onclick = () => {
+    state.mode='offline';
+    setActiveTab('tabOffline');
+    renderOfflineList();
+  };
 }
 
 function setActiveTab(activeId){
-  ['tabSurah','tabJuz','tabBookmarks','tabHistory'].forEach(id => {
+  ['tabSurah','tabJuz','tabBookmarks','tabHistory','tabOffline'].forEach(id => {
     document.getElementById(id).classList.toggle('active', id === activeId);
   });
 }
