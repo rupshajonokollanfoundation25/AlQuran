@@ -218,8 +218,8 @@ async function downloadCurrentAudioForOffline(btn){
     try{
       const existing = await cache.match(url);
       if(!existing){
-        const res = await fetch(url, { mode: 'cors' });
-        if(res.ok) await cache.put(url, res.clone());
+        const res = await fetch(url, { mode: 'no-cors' });
+        if(res) await cache.put(url, res.clone());
       }
     }catch(e){ /* skip and continue */ }
     done++;
