@@ -247,6 +247,10 @@ main{flex:1;min-width:0;padding:22px 28px calc(40px + var(--player-h));width:100
 .sr-empty{padding:30px;text-align:center;color:var(--ink-soft);}
 
 .toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;}
+.toolbar .icon-btn{
+  background:var(--panel);border:1px solid var(--line);color:var(--ink);font-weight:600;
+}
+.toolbar .icon-btn:hover{background:var(--sage);}
 
 /* ---------- Sticky audio player ----------
    Layout uses flex-wrap: row 1 = info + controls + close,
