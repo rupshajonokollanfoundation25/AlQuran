@@ -7,7 +7,7 @@ const AUDIO_CDN = 'https://cdn.islamic.network/quran/audio/128';
 
 // Bump the version suffix any time app-shell files change so the service
 // worker picks up a fresh copy instead of serving a stale cached version.
-const SW_VERSION = 'v10';
+const SW_VERSION = 'v11';
 const SHELL_CACHE_NAME = `qr-shell-${SW_VERSION}`;
 const API_CACHE_NAME = `qr-api-${SW_VERSION}`;
 const AUDIO_CACHE_NAME = `qr-audio-${SW_VERSION}`;
@@ -24,6 +24,10 @@ const APP_SHELL_FILES = [
   './js/reader.js',
   './js/sidebar.js',
   './js/search.js',
+  './js/topics.js',
+  './js/planner.js',
+  './js/stats.js',
+  './js/nav.js',
   './js/app.js',
   './icons/icon-192.png',
   './icons/icon-512.png'
