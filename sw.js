@@ -77,10 +77,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.href.startsWith(AUDIO_CDN)) {
-    event.respondWith(cacheFirstAudio(req));
-    return;
-  }
+  
+
+
+
+
+
+
+
+
 
   if (url.href.startsWith(API)) {
     event.respondWith(networkFirst(req, API_CACHE_NAME));
