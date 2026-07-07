@@ -68,6 +68,7 @@ function initInstallPrompt(){
   initTheme();
   initFontControls();
   initNav();
+  initMenu();
   initTopics();
   initPlanner();
   initStats();
