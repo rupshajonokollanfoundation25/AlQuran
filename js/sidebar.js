@@ -9,7 +9,7 @@ async function fetchSurahList(){
     renderSurahList();
     renderHero();
   }catch(e){
-    listContainer.innerHTML = `<div class="error-box">সূরার তালিকা লোড করা যায়নি।<br><button onclick="fetchSurahList()">আবার চেষ্টা করুন</button></div>`;
+    listContainer.innerHTML = `<div class="error-box">Could not load the surah list.<br><button onclick="fetchSurahList()">Try again.</button></div>`;
   }
 }
 
@@ -20,7 +20,7 @@ function renderSurahList(){
     item.className = 'list-item';
     item.innerHTML = `<div class="badge-num">${toBn(s.number)}</div>
       <div class="li-text">
-        <div class="li-title">${surahNamesBn[s.number-1] || s.englishName}${isSurahOffline(s.number) ? ' <span class="offline-dot" title="অফলাইনে সংরক্ষিত">⬇</span>' : ''}</div>
+        <div class="li-title">${surahNamesBn[s.number-1] || s.englishName}${isSurahOffline(s.number) ? ' <span class="offline-dot" title="Saved offline">⬇</span>' : ''}</div>
         <div class="li-sub">${s.name}</div>
       </div>
       <div class="li-meta">${toBn(s.numberOfAyahs)} আয়াত</div>`;
@@ -81,7 +81,7 @@ function renderHistoryList(){
     item.className = 'list-item history-item';
     item.innerHTML = `<div class="badge-num">${toBn(h.surah)}</div>
       <div class="li-text">
-        <div class="li-title">${h.title}${isSurahOffline(h.surah) ? ' <span class="offline-dot" title="অফলাইনে সংরক্ষিত">⬇</span>' : ''}</div>
+        <div class="li-title">${h.title}${isSurahOffline(h.surah) ? ' <span class="offline-dot" title="Saved offline">⬇</span>' : ''}</div>
         <div class="li-sub">আয়াত ${toBn(h.ayah)} · ${reciterName}</div>
       </div>
       <div class="li-meta">${timeAgoBn(h.ts)}</div>`;
@@ -113,25 +113,25 @@ function renderOfflineList(){
     item.className = 'list-item offline-item';
     item.innerHTML = `<div class="badge-num">${toBn(entry.surah)}</div>
       <div class="li-text">
-        <div class="li-title">${title} <span class="offline-dot" title="অফলাইনে সংরক্ষিত">⬇</span></div>
+        <div class="li-title">${title} <span class="offline-dot" title="Saved offline">⬇</span></div>
         <div class="li-sub">${ayahCount ? toBn(ayahCount) + ' আয়াত' : ''}${reciterName ? ' · ' + reciterName : ''}</div>
       </div>
       <div class="li-meta">${timeAgoBn(entry.ts)}</div>
-      <button class="offline-remove-btn" title="অফলাইন থেকে মুছুন">মুছুন</button>`;
+      <button class="offline-remove-btn" title="Delete from offline">Delete</button>`;
     item.querySelector('.li-text').onclick = () => { openSurah(entry.surah); closeSidebarMobile(); };
     item.querySelector('.badge-num').onclick = () => { openSurah(entry.surah); closeSidebarMobile(); };
     item.querySelector('.offline-remove-btn').onclick = async (e) => {
       e.stopPropagation();
       const btn = e.currentTarget;
       btn.disabled = true;
-      btn.textContent = 'মুছে ফেলা হচ্ছে...';
+      btn.textContent = 'Deleting...';
       await removeSurahOffline(entry.surah);
       renderOfflineList();
       const openOfflineBtn = document.getElementById('offlineBtn');
       if(openOfflineBtn && state.playlist.length && state.playlist[0].surah === entry.surah){
         openOfflineBtn.classList.remove('downloaded');
         openOfflineBtn.disabled = false;
-        openOfflineBtn.textContent = '⬇ অফলাইনে সংরক্ষণ করুন';
+        openOfflineBtn.textContent = '⬇ Save offline';
       }
     };
     listContainer.appendChild(item);
