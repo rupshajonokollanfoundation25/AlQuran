@@ -32,7 +32,9 @@ function playAtIndex(idx, userInitiated){
   state.lastRead = { surah: item.surah, ayah: item.numberInSurah };
   saveLastRead();
   addHistoryEntry({ surah: item.surah, title: item.title, ayah: item.numberInSurah, reciter: state.reciter, ts: Date.now() });
-  if(state.mode === 'history') renderHistoryList();
+  const libList = document.getElementById('libraryListContainer');
+  if(libList && document.getElementById('libTabHistory') && document.getElementById('libTabHistory').classList.contains('active')) renderHistoryList(libList);
+  recordActivityToday();
   const card = document.getElementById(`ayah-${item.key.replace(':','-')}`);
   if(card && userInitiated) card.scrollIntoView({behavior:'smooth', block:'center'});
   updateMediaSessionMetadata(item);
