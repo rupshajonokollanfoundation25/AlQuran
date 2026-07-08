@@ -7,6 +7,27 @@
 //  - Google Fonts                    -> stale-while-revalidate
 importScripts('./js/data.js');
 
+// ---------- Prayer time push notifications (Firebase Cloud Messaging) ----------
+// Handles notifications sent by the server-side script even when the app is
+// closed. This does not affect any of the offline caching logic below.
+importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
+importScripts('./js/firebase-config.js');
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  const title = (payload.notification && payload.notification.title) || 'নামাজের সময়';
+  const body = (payload.notification && payload.notification.body) || 'নামাজের জন্য প্রস্তুত হোন।';
+  self.registration.showNotification(title, {
+    body,
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    tag: (payload.data && payload.data.prayer) || 'prayer-notify'
+  });
+});
+
 const KNOWN_CACHES = [SHELL_CACHE_NAME, API_CACHE_NAME, AUDIO_CACHE_NAME, FONT_CACHE_NAME];
 
 self.addEventListener('install', (event) => {
