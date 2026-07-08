@@ -8,7 +8,7 @@ const PRAYER_API = 'https://api.aladhan.com/v1';
 
 // Bump the version suffix any time app-shell files change so the service
 // worker picks up a fresh copy instead of serving a stale cached version.
-const SW_VERSION = 'v14';
+const SW_VERSION = 'v13';
 const SHELL_CACHE_NAME = `qr-shell-${SW_VERSION}`;
 const API_CACHE_NAME = `qr-api-${SW_VERSION}`;
 const AUDIO_CACHE_NAME = `qr-audio-${SW_VERSION}`;
@@ -28,6 +28,7 @@ const APP_SHELL_FILES = [
   './js/topics.js',
   './js/planner.js',
   './js/stats.js',
+  './js/ramadan.js',
   './js/nav.js',
   './js/menu.js',
   './js/app.js',
@@ -37,6 +38,25 @@ const APP_SHELL_FILES = [
 
 const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
 function toBn(n){ return String(n).split('').map(d => /[0-9]/.test(d) ? bnDigits[+d] : d).join(''); }
+
+// A curated pool used for the "Ayah of the Day" home card — one is picked
+// deterministically per calendar day so it stays the same all day and
+// changes at midnight.
+const AYAH_OF_DAY_POOL = [
+  {s:2,a:255}, {s:94,a:5}, {s:94,a:6}, {s:13,a:28}, {s:2,a:286},
+  {s:65,a:3}, {s:3,a:159}, {s:39,a:53}, {s:2,a:152}, {s:16,a:97},
+  {s:29,a:69}, {s:9,a:40}, {s:2,a:216}, {s:20,a:114}, {s:17,a:23},
+  {s:31,a:14}, {s:49,a:13}, {s:59,a:22}, {s:59,a:23}, {s:59,a:24},
+  {s:112,a:1}, {s:21,a:35}, {s:6,a:162}, {s:3,a:139}, {s:33,a:41},
+  {s:8,a:2}, {s:24,a:35}, {s:4,a:1}, {s:30,a:21}, {s:41,a:34}
+];
+function ayahOfTheDay(){
+  const d = new Date();
+  const dayNum = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+  return AYAH_OF_DAY_POOL[dayNum % AYAH_OF_DAY_POOL.length];
+}
+
+const RAMADAN_DEFAULT_RAKAT_GOAL = 20;
 
 const surahNamesBn = ["আল-ফাতিহা","আল-বাকারা","আলে ইমরান","আন-নিসা","আল-মায়িদা","আল-আনআম","আল-আরাফ","আল-আনফাল","আত-তাওবা","ইউনুস","হুদ","ইউসুফ","আর-রাদ","ইব্রাহীম","আল-হিজর","আন-নাহল","বনী ইসরাঈল (আল-ইসরা)","আল-কাহফ","মারইয়াম","ত্বা-হা","আল-আম্বিয়া","আল-হাজ্জ","আল-মুমিনূন","আন-নূর","আল-ফুরকান","আশ-শুআরা","আন-নামল","আল-কাসাস","আল-আনকাবূত","আর-রূম","লুকমান","আস-সাজদাহ","আল-আহযাব","সাবা","ফাতির","ইয়াসীন","আস-সাফফাত","সোয়াদ","আয-যুমার","গাফির","হা-মীম আস-সাজদাহ (ফুসসিলাত)","আশ-শূরা","আয-যুখরুফ","আদ-দুখান","আল-জাসিয়া","আল-আহকাফ","মুহাম্মাদ","আল-ফাতহ","আল-হুজুরাত","ক্বাফ","আয-যারিয়াত","আত-তূর","আন-নাজম","আল-ক্বামার","আর-রাহমান","আল-ওয়াকিয়া","আল-হাদীদ","আল-মুজাদালা","আল-হাশর","আল-মুমতাহিনা","আস-সফ","আল-জুমুআ","আল-মুনাফিকুন","আত-তাগাবুন","আত-তালাক","আত-তাহরীম","আল-মুলক","আল-কলম","আল-হাক্কাহ","আল-মাআরিজ","নূহ","আল-জ্বিন","আল-মুয্যাম্মিল","আল-মুদ্দাসসির","আল-কিয়ামাহ","আদ-দাহর (আল-ইনসান)","আল-মুরসালাত","আন-নাবা","আন-নাযিআত","আবাসা","আত-তাকভীর","আল-ইনফিতার","আল-মুতাফফিফীন","আল-ইনশিকাক","আল-বুরূজ","আত-তারিক","আল-আ'লা","আল-গাশিয়া","আল-বালাদ","আশ-শামস","আল-লাইল","আদ-দুহা","আশ-শারহ","আত-তীন","আল-আলাক","আল-ক্বদর","আল-বাইয়্যিনা","আয-যিলযাল","আল-আদিয়াত","আল-ক্বারিয়া","আত-তাকাসুর","আল-আসর","আল-হুমাযাহ","আল-ফীল","কুরাইশ","আল-মাউন","আল-কাওসার","আল-কাফিরুন","আন-নসর","আল-লাহাব","আল-ইখলাস","আল-ফালাক","আন-নাস"];
 
@@ -68,21 +88,21 @@ const reciters = [
 // TODO(Imran): এই লিংকগুলো আপনার আসল ওয়েবসাইট, ফেসবুক পেজ এবং ইউটিউব চ্যানেলের
 // ঠিকানা দিয়ে পরিবর্তন করে নিন।
 const SOCIAL_LINKS = {
-  website: 'https://rupshajf.vercel.app/',
-  facebook: 'https://facebook.com/rupshajonokollanfoundation',
-  youtube: 'https://youtube.com/@রূপসাজনকল্যাণফাউন্ডেশন'
+  website: 'https://example.com',
+  facebook: 'https://facebook.com/yourpage',
+  youtube: 'https://youtube.com/@yourchannel'
 };
 
 // ---------- Prayer time calculation methods (Aladhan API) ----------
 const PRAYER_METHODS = [
-  { id: 1,  name: 'University of Islamic Sciences, Karachi' },
+  { id: 1,  name: 'ইউনিভার্সিটি অব ইসলামিক সায়েন্সেস, করাচি' },
   { id: 3,  name: 'Muslim World League' },
-  { id: 2,  name: 'ISNA (North America)' },
-  { id: 4,  name: 'Umm al-Qura, Mecca' },
-  { id: 5,  name: 'Egyptian General Survey Authority' },
-  { id: 8,  name: 'Gulf Region' },
-  { id: 13, name: 'Diyanet, Turkey' },
-  { id: 20, name: 'Kemenag, Indonesia' }
+  { id: 2,  name: 'ISNA (উত্তর আমেরিকা)' },
+  { id: 4,  name: 'উম্মুল কুরা, মক্কা' },
+  { id: 5,  name: 'মিশরীয় সাধারণ জরিপ কর্তৃপক্ষ' },
+  { id: 8,  name: 'উপসাগরীয় অঞ্চল' },
+  { id: 13, name: 'দিয়ানেত, তুরস্ক' },
+  { id: 20, name: 'কেমেনাগ, ইন্দোনেশিয়া' }
 ];
 
 // ---------- Simple built-in Islamic / Qur'anic term dictionary ----------
