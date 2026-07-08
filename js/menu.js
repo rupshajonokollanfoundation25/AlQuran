@@ -71,34 +71,155 @@ function showInputBox({title, placeholder, defaultValue, confirmLabel, inputType
 }
 
 // ================= Language / i18n =================
+// Interface language: applies whichever I18N[lang] dictionary is chosen,
+// falling back to English for any key a language block hasn't got yet.
 function applyLanguage(lang){
-  state.language = (lang === 'en') ? 'en' : 'bn';
+  state.language = I18N[lang] ? lang : 'bn';
   saveLanguage();
   const dict = I18N[state.language];
+  const fallback = I18N.en;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if(dict[key] !== undefined) el.textContent = dict[key];
+    const val = dict[key] !== undefined ? dict[key] : fallback[key];
+    if(val !== undefined) el.textContent = val;
   });
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     const key = el.getAttribute('data-i18n-ph');
-    if(dict[key] !== undefined) el.placeholder = dict[key];
-  });
-  document.querySelectorAll('#langToggle button').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-lang') === state.language);
+    const val = dict[key] !== undefined ? dict[key] : fallback[key];
+    if(val !== undefined) el.placeholder = val;
   });
   document.documentElement.lang = state.language;
+  const meta = UI_LANG_META.find(m => m.code === state.language);
+  document.documentElement.dir = (meta && meta.dir === 'rtl') ? 'rtl' : 'ltr';
+  const labelEl = document.getElementById('settingsLanguageLabel');
+  if(labelEl) labelEl.textContent = meta ? meta.label : state.language;
 }
 function initLanguage(){
-  document.querySelectorAll('#langToggle button').forEach(btn => {
-    btn.onclick = () => applyLanguage(btn.getAttribute('data-lang'));
-  });
   applyLanguage(state.language);
+}
+
+// ---- Generic searchable picker modal, reused for both the interface
+// language list (static, from UI_LANG_META) and the Qur'an translation
+// language list (dynamic, fetched from the API — see loadTranslationEditions
+// in js/reader.js). Keeping one implementation means adding more languages
+// to either list later needs no new UI code. ----
+function openLangPickerModal({titleKey, items, activeId, onPick}){
+  const dict = I18N[state.language] || I18N.en;
+  const t = (k) => dict[k] !== undefined ? dict[k] : I18N.en[k];
+  let modal = document.getElementById('langPickerModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.className = 'app-modal';
+    modal.id = 'langPickerModal';
+    modal.innerHTML = `
+      <div class="app-modal-box">
+        <div class="app-modal-head">
+          <h3 id="langPickerTitle"></h3>
+          <button class="app-modal-close" id="langPickerClose">✕</button>
+        </div>
+        <div class="app-modal-body">
+          <input type="text" id="langPickerSearch" class="input-box-field" style="margin-bottom:10px;">
+          <div id="langPickerList" class="lang-picker-list"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    wireModalBackdrop('langPickerModal');
+    document.getElementById('langPickerClose').onclick = () => closeModal('langPickerModal');
+  }
+  document.getElementById('langPickerTitle').textContent = t(titleKey);
+  const searchInput = document.getElementById('langPickerSearch');
+  searchInput.placeholder = t('lang_search_ph');
+  searchInput.value = '';
+  const listEl = document.getElementById('langPickerList');
+  const renderList = (filter) => {
+    const q = (filter || '').trim().toLowerCase();
+    const filtered = !q ? items : items.filter(it => it.label.toLowerCase().includes(q) || (it.sub||'').toLowerCase().includes(q));
+    listEl.innerHTML = filtered.length ? filtered.map(it => `
+      <button class="lang-picker-item${it.id === activeId ? ' active' : ''}" data-id="${it.id}">
+        <span class="lp-label">${it.label}</span>
+        ${it.sub ? `<span class="lp-sub">${it.sub}</span>` : ''}
+        ${it.id === activeId ? '<i class="fa-solid fa-check"></i>' : ''}
+      </button>`).join('') : `<div class="lang-picker-empty">—</div>`;
+    listEl.querySelectorAll('.lang-picker-item').forEach(btn => {
+      btn.onclick = () => { closeModal('langPickerModal'); onPick(btn.getAttribute('data-id')); };
+    });
+  };
+  renderList('');
+  searchInput.oninput = () => renderList(searchInput.value);
+  openModal('langPickerModal');
+  setTimeout(() => searchInput.focus(), 50);
+}
+
+function openUiLanguagePicker(){
+  openLangPickerModal({
+    titleKey: 'settings_language',
+    items: UI_LANG_META.map(m => ({ id: m.code, label: m.label })),
+    activeId: state.language,
+    onPick: (code) => { applyLanguage(code); }
+  });
+}
+
+async function openTranslationLanguagePicker(){
+  const btn = document.getElementById('settingsTranslationBtn');
+  const label = document.getElementById('settingsTranslationLabel');
+  if(label) label.textContent = '…';
+  const editions = await loadTranslationEditions();
+  const items = editions
+    .map(e => ({ id: e.identifier, label: e.language ? `${e.name || e.englishName} — ${languageDisplayName(e.language)}` : (e.name || e.englishName), sub: e.identifier }))
+    .sort((a,b) => a.label.localeCompare(b.label));
+  if(label) label.textContent = translationEditionLabel(state.translationEdition);
+  openLangPickerModal({
+    titleKey: 'translation_picker_title',
+    items,
+    activeId: state.translationEdition,
+    onPick: (identifier) => {
+      state.translationEdition = identifier;
+      saveTranslationEdition();
+      if(label) label.textContent = translationEditionLabel(identifier);
+      reopenCurrentReaderView();
+    }
+  });
+}
+
+// Human-readable label for whichever edition is currently selected, used on
+// the Settings row button (e.g. "Sahih International — English").
+function translationEditionLabel(identifier){
+  const e = findTranslationEdition(identifier);
+  if(e) return `${e.name || e.englishName} — ${languageDisplayName(e.language)}`;
+  return identifier;
+}
+// Best-effort native/English name for a 2-letter language code, used to
+// label Qur'an translation editions the built-in UI dictionary doesn't cover.
+function languageDisplayName(code){
+  const meta = UI_LANG_META.find(m => m.code === code);
+  if(meta) return meta.label;
+  try{
+    return new Intl.DisplayNames([state.language, 'en'], { type: 'language' }).of(code);
+  }catch(e){ return code; }
 }
 
 // ================= Settings modal =================
 function initSettingsModal(){
   wireModalBackdrop('settingsModal');
   document.getElementById('settingsClose').onclick = () => closeModal('settingsModal');
+
+  // Interface language picker
+  const langBtn = document.getElementById('settingsLanguageBtn');
+  if(langBtn){
+    const meta = UI_LANG_META.find(m => m.code === state.language);
+    document.getElementById('settingsLanguageLabel').textContent = meta ? meta.label : state.language;
+    langBtn.onclick = openUiLanguagePicker;
+  }
+
+  // Qur'an translation language picker (all 50+ languages the API offers)
+  const trBtn = document.getElementById('settingsTranslationBtn');
+  if(trBtn){
+    document.getElementById('settingsTranslationLabel').textContent = translationEditionLabel(state.translationEdition);
+    trBtn.onclick = openTranslationLanguagePicker;
+    loadTranslationEditions().then(() => {
+      document.getElementById('settingsTranslationLabel').textContent = translationEditionLabel(state.translationEdition);
+    });
+  }
 
   // Reciter select, kept in sync with the player's own reciter dropdown.
   const recSel = document.getElementById('settingsReciter');
