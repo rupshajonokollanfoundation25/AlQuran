@@ -65,7 +65,8 @@ function renderTaraweehBody(){
         <button id="twGoalInc">+</button>
       </div>
     </div>
-    <div class="tw-grid">${grid}</div>
+    <div class="tw-edit-panel" id="twEditPanel" style="display:none;"></div>
+    <div class="tw-grid" id="twGrid">${grid}</div>
     <div class="tw-hint">প্রতিটি রাতের ঘরে চাপ দিয়ে সে রাতের সম্পন্ন করা রাকাত সংখ্যা বসান।</div>
   `;
 
@@ -83,16 +84,57 @@ function renderTaraweehBody(){
   body.querySelectorAll('.tw-day').forEach(el => {
     el.onclick = () => {
       const day = parseInt(el.getAttribute('data-day'), 10);
-      const current = state.taraweeh.days[day] || 0;
-      const g = state.taraweeh.goal || RAMADAN_DEFAULT_RAKAT_GOAL;
-      const input = window.prompt(`${toBn(day)} নং রাতে কত রাকাত তারাবীহ পড়েছেন? (০ - ${toBn(g)})`, String(current));
-      if(input === null) return;
-      const n = parseInt(input, 10);
-      if(!Number.isInteger(n)) return;
-      setTaraweehDay(day, n);
-      renderTaraweehBody();
+      body.querySelectorAll('.tw-day').forEach(d => d.classList.toggle('editing', d === el));
+      openTaraweehEditPanel(day);
     };
   });
+}
+
+// A small in-app "box" for entering a night's rakat count — replaces the
+// browser's plain window.prompt() dialog (which shows the raw site address)
+// with a properly styled stepper that matches the rest of the app.
+function openTaraweehEditPanel(day){
+  const panel = document.getElementById('twEditPanel');
+  if(!panel) return;
+  const goal = state.taraweeh.goal || RAMADAN_DEFAULT_RAKAT_GOAL;
+  let value = state.taraweeh.days[day] || 0;
+
+  const draw = () => {
+    panel.innerHTML = `
+      <div class="tw-edit-head">রাত ${toBn(day)} — সম্পন্ন রাকাত</div>
+      <div class="tw-edit-stepper">
+        <button class="tw-step-btn" id="twStepDec">−</button>
+        <span class="tw-edit-value">${toBn(value)}</span>
+        <button class="tw-step-btn" id="twStepInc">+</button>
+      </div>
+      <div class="tw-edit-quick">
+        ${[0, Math.round(goal/2), goal].filter((v,i,arr)=>arr.indexOf(v)===i).map(v =>
+          `<button class="tw-quick-btn${v===value?' active':''}" data-v="${v}">${toBn(v)}</button>`).join('')}
+      </div>
+      <div class="tw-edit-actions">
+        <button class="tw-cancel-btn" id="twEditCancel">বাতিল</button>
+        <button class="tw-save-btn" id="twEditSave">সংরক্ষণ করুন</button>
+      </div>`;
+    panel.querySelector('#twStepDec').onclick = () => { value = Math.max(0, value-1); draw(); };
+    panel.querySelector('#twStepInc').onclick = () => { value = Math.min(goal, value+1); draw(); };
+    panel.querySelectorAll('.tw-quick-btn').forEach(b => {
+      b.onclick = () => { value = parseInt(b.getAttribute('data-v'),10); draw(); };
+    });
+    panel.querySelector('#twEditCancel').onclick = () => closeTaraweehEditPanel();
+    panel.querySelector('#twEditSave').onclick = () => {
+      setTaraweehDay(day, value);
+      closeTaraweehEditPanel();
+      renderTaraweehBody();
+    };
+  };
+  draw();
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function closeTaraweehEditPanel(){
+  const panel = document.getElementById('twEditPanel');
+  if(panel){ panel.style.display = 'none'; panel.innerHTML = ''; }
+  document.querySelectorAll('.tw-day.editing').forEach(d => d.classList.remove('editing'));
 }
 
 function initRamadan(){
