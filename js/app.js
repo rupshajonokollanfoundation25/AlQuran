@@ -65,6 +65,7 @@ function initInstallPrompt(){
 // ---------- App init ----------
 (async function init(){
   loadPrefs();
+  if(typeof initAuth === 'function') initAuth();
   initTheme();
   initFontControls();
   initNav();
