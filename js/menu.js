@@ -239,6 +239,7 @@ function initSettingsModal(){
   methodSel.onchange = () => {
     state.prayerMethod = parseInt(methodSel.value, 10);
     savePrayerMethod();
+    updatePushLocationIfSubscribed();
     if(document.getElementById('prayerModal').style.display === 'flex' && state.prayerLocation){
       fetchPrayerTimes(state.prayerLocation);
     }
@@ -277,10 +278,22 @@ function initSettingsModal(){
         showToast('বিজ্ঞপ্তির অনুমতি দেওয়া হয়নি');
         return;
       }
+      if(!state.prayerLocation){
+        showToast('আগে নামাজের সময়ের অপশন থেকে লোকেশন সেট করুন');
+        notifyChk.checked = false;
+        return;
+      }
+      const ok = await enablePrayerPush();
+      if(!ok){
+        showToast('বিজ্ঞপ্তি চালু করা যায়নি, আবার চেষ্টা করুন');
+        notifyChk.checked = false;
+        return;
+      }
+    } else {
+      disablePrayerPush();
     }
     state.prayerNotify = notifyChk.checked;
     savePrayerNotify();
-    if(state.prayerNotify && state.lastPrayerTimings) schedulePrayerNotifications(state.lastPrayerTimings);
   };
 }
 function openSettingsModal(){ openModal('settingsModal'); }
@@ -320,6 +333,7 @@ function locatePrayerTimes(){
       const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: null };
       state.prayerLocation = loc;
       savePrayerLocation();
+      updatePushLocationIfSubscribed();
       fetchPrayerTimes(loc);
     },
     () => renderManualLocationForm('অবস্থানের অনুমতি পাওয়া যায়নি। শহরের নাম লিখে খুঁজুন।'),
@@ -374,6 +388,7 @@ async function fetchPrayerTimesByCity(city, country){
     const loc = { lat: json.data.meta.latitude, lon: json.data.meta.longitude, label };
     state.prayerLocation = loc;
     savePrayerLocation();
+    updatePushLocationIfSubscribed();
     cachePrayerData(json.data, loc);
     renderPrayerTimes(json.data, label);
   }catch(e){
@@ -420,7 +435,6 @@ function renderPrayerTimes(data, locationLabel, isOffline){
     fetchPrayerTimesByCity(parts[0], parts[1] || '');
   };
   startPrayerTicker(timings);
-  if(state.prayerNotify) schedulePrayerNotifications(timings);
 }
 // Converts an "HH:MM" (24h) string to Bengali-digit 12-hour display, e.g. "05:21" -> "৫:২১ AM"
 function to12h(hhmm){
@@ -474,25 +488,6 @@ function startPrayerTicker(timings){
 function stopPrayerTicker(){
   if(prayerTickHandle){ clearInterval(prayerTickHandle); prayerTickHandle = null; }
 }
-// Schedules a one-shot browser notification for each remaining prayer today.
-function schedulePrayerNotifications(timings){
-  if(!('Notification' in window) || Notification.permission !== 'granted') return;
-  if(state._prayerNotifyTimers) state._prayerNotifyTimers.forEach(clearTimeout);
-  state._prayerNotifyTimers = [];
-  const now = new Date();
-  PRAYER_ORDER.filter(p => !p.informational).forEach(p => {
-    const [h, m] = timings[p.key].split(' ')[0].split(':').map(Number);
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-    const ms = d - now;
-    if(ms > 0 && ms < 86400000){
-      const t = setTimeout(() => {
-        new Notification(`${p.label} এর সময় হয়েছে`, { body: 'নামাজের জন্য প্রস্তুত হোন।', icon: 'icons/icon-192.png' });
-      }, ms);
-      state._prayerNotifyTimers.push(t);
-    }
-  });
-}
-
 // ================= Dictionary modal =================
 function initDictionaryModal(){
   wireModalBackdrop('dictionaryModal');
