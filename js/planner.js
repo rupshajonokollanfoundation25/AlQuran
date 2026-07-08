@@ -96,8 +96,18 @@ function renderPlannerFind(container){
   custom.className = 'list-item';
   custom.innerHTML = `<div class="badge-num">+</div><div class="li-text"><div class="li-title">নিজের মতো দিন সংখ্যা লিখুন</div></div>`;
   custom.onclick = () => {
-    const n = parseInt(prompt('কত দিনে সম্পন্ন করতে চান?', '90'), 10);
-    if(Number.isInteger(n) && n > 0) createPlan(`${toBn(n)} দিনে কুরআন`, n);
+    showInputBox({
+      title: 'কত দিনে সম্পন্ন করতে চান?',
+      placeholder: 'যেমন 90',
+      inputType: 'number',
+      defaultValue: '90',
+      confirmLabel: 'তৈরি করুন',
+      onConfirm: (val) => {
+        const n = parseInt(val, 10);
+        if(Number.isInteger(n) && n > 0) createPlan(`${toBn(n)} দিনে কুরআন`, n);
+        else showToast('সঠিক সংখ্যা লিখুন');
+      }
+    });
   };
   container.appendChild(custom);
 }
