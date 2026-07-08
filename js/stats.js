@@ -55,6 +55,49 @@ function nextMilestone(streak){
   return STREAK_MILESTONES.find(m => m > streak) || (streak + 30);
 }
 
+// ---------- Badges: real unlock logic tied to actual app usage ----------
+const BADGE_ICON_SVGS = {
+  audio: '<path d="M4.5 13.5a7.5 7.5 0 0 1 15 0"/><rect x="3.2" y="13.5" width="4.2" height="7" rx="1.6"/><rect x="16.6" y="13.5" width="4.2" height="7" rx="1.6"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6.8"/><path d="M20 20l-4.3-4.3"/>',
+  ramadan: '<path d="M12 3a9 9 0 1 0 8.9 10.4A6.5 6.5 0 0 1 12 3z"/><path d="M18 3.2l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z"/>'
+};
+function badgeIconSvg(id){
+  return `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${BADGE_ICON_SVGS[id]||''}</svg>`;
+}
+const AUDIO_BADGE_GOAL = 5;
+const SEARCH_BADGE_GOAL = 5;
+const BADGES = [
+  {
+    id: 'audio', label: 'অডিও এক্সপ্লোরার',
+    progress: () => Math.min((state.audioSurahsPlayed||[]).length, AUDIO_BADGE_GOAL),
+    goal: AUDIO_BADGE_GOAL,
+    caption: () => `${toBn(Math.min((state.audioSurahsPlayed||[]).length, AUDIO_BADGE_GOAL))}/${toBn(AUDIO_BADGE_GOAL)} সূরা শোনা`
+  },
+  {
+    id: 'search', label: 'সার্চ এক্সপ্লোরার',
+    progress: () => Math.min(state.searchCount||0, SEARCH_BADGE_GOAL),
+    goal: SEARCH_BADGE_GOAL,
+    caption: () => `${toBn(Math.min(state.searchCount||0, SEARCH_BADGE_GOAL))}/${toBn(SEARCH_BADGE_GOAL)} সার্চ`
+  },
+  {
+    id: 'ramadan', label: 'হার্ট অব রমযান',
+    progress: () => Math.min(taraweehCompletedCount ? taraweehCompletedCount() : 0, 1),
+    goal: 1,
+    caption: () => (taraweehCompletedCount && taraweehCompletedCount() > 0) ? 'তারাবীহ লগ করা হয়েছে' : 'তারাবীহ ট্র্যাকার ব্যবহার করুন'
+  }
+];
+function renderBadges(){
+  return BADGES.map(b => {
+    const progress = b.progress();
+    const unlocked = progress >= b.goal;
+    return `<div class="badge-card${unlocked?' unlocked':''}">
+      <div class="badge-ic-box">${badgeIconSvg(b.id)}${unlocked?'':'<span class="badge-lock-dot"><i class="fa-solid fa-lock"></i></span>'}</div>
+      <div class="badge-name-v2">${b.label}</div>
+      <div class="badge-progress-v2">${b.caption()}</div>
+    </div>`;
+  }).join('');
+}
+
 function renderStatsView(){
   const container = document.getElementById('statsContainer');
   const activity = loadActivity();
@@ -109,12 +152,10 @@ function renderStatsView(){
     </div>
 
     <div class="badges-head">
-      <span>ব্যাজ</span><span class="badges-see-all">সবগুলো দেখুন</span>
+      <span>ব্যাজ</span>
     </div>
-    <div class="badges-row">
-      <div class="badge-item"><div class="badge-circle">🔒</div><div class="badge-label">অডিও এক্সপ্লোরার</div></div>
-      <div class="badge-item"><div class="badge-circle">🔒</div><div class="badge-label">অনুসন্ধান এক্সপ্লোরার</div></div>
-      <div class="badge-item"><div class="badge-circle">🔒</div><div class="badge-label">হার্ট অব রমযান</div></div>
+    <div class="badges-grid">
+      ${renderBadges()}
     </div>
   `;
 }
