@@ -62,29 +62,19 @@ const RAMADAN_DEFAULT_RAKAT_GOAL = 20;
 
 const surahNamesBn = ["আল-ফাতিহা","আল-বাকারা","আলে ইমরান","আন-নিসা","আল-মায়িদা","আল-আনআম","আল-আরাফ","আল-আনফাল","আত-তাওবা","ইউনুস","হুদ","ইউসুফ","আর-রাদ","ইব্রাহীম","আল-হিজর","আন-নাহল","বনী ইসরাঈল (আল-ইসরা)","আল-কাহফ","মারইয়াম","ত্বা-হা","আল-আম্বিয়া","আল-হাজ্জ","আল-মুমিনূন","আন-নূর","আল-ফুরকান","আশ-শুআরা","আন-নামল","আল-কাসাস","আল-আনকাবূত","আর-রূম","লুকমান","আস-সাজদাহ","আল-আহযাব","সাবা","ফাতির","ইয়াসীন","আস-সাফফাত","সোয়াদ","আয-যুমার","গাফির","হা-মীম আস-সাজদাহ (ফুসসিলাত)","আশ-শূরা","আয-যুখরুফ","আদ-দুখান","আল-জাসিয়া","আল-আহকাফ","মুহাম্মাদ","আল-ফাতহ","আল-হুজুরাত","ক্বাফ","আয-যারিয়াত","আত-তূর","আন-নাজম","আল-ক্বামার","আর-রাহমান","আল-ওয়াকিয়া","আল-হাদীদ","আল-মুজাদালা","আল-হাশর","আল-মুমতাহিনা","আস-সফ","আল-জুমুআ","আল-মুনাফিকুন","আত-তাগাবুন","আত-তালাক","আত-তাহরীম","আল-মুলক","আল-কলম","আল-হাক্কাহ","আল-মাআরিজ","নূহ","আল-জ্বিন","আল-মুয্যাম্মিল","আল-মুদ্দাসসির","আল-কিয়ামাহ","আদ-দাহর (আল-ইনসান)","আল-মুরসালাত","আন-নাবা","আন-নাযিআত","আবাসা","আত-তাকভীর","আল-ইনফিতার","আল-মুতাফফিফীন","আল-ইনশিকাক","আল-বুরূজ","আত-তারিক","আল-আ'লা","আল-গাশিয়া","আল-বালাদ","আশ-শামস","আল-লাইল","আদ-দুহা","আশ-শারহ","আত-তীন","আল-আলাক","আল-ক্বদর","আল-বাইয়্যিনা","আয-যিলযাল","আল-আদিয়াত","আল-ক্বারিয়া","আত-তাকাসুর","আল-আসর","আল-হুমাযাহ","আল-ফীল","কুরাইশ","আল-মাউন","আল-কাওসার","আল-কাফিরুন","আন-নসর","আল-লাহাব","আল-ইখলাস","আল-ফালাক","আন-নাস"];
 
+
+
+
 const reciters = [
   { id: 'ar.alafasy', name: 'Mishary Alafasy' },
-  { id: 'ar.abdulbasitmurattal', name: 'Abdul Basit (Murattal)' },
   { id: 'ar.husary', name: 'Mahmoud Khalil Al-Hussari' },
   { id: 'ar.minshawi', name: 'Muhammad Minshawi' },
-  { id: 'ar.abdurrahmaansudais', name: 'Abdur Rahman As-Sudais' },
-
   { id: 'ar.shaatree', name: 'Abu Bakr Ash-Shatri' },
   { id: 'ar.mahermuaiqly', name: 'Maher Al-Muaiqly' },
-  { id: 'ar.saoodshuraym', name: 'Saud Ash-Shuraim' },
   { id: 'ar.ahmedajamy', name: 'Ahmed Al-Ajamy' },
-  { id: 'ar.yasseraldossari', name: 'Yasser Al-Dosari' },
-  { id: 'ar.nasseralqatami', name: 'Nasser Al-Qatami' },
-  { id: 'ar.faresabad', name: 'Fares Abbad' },
-  { id: 'ar.khaleelhusary', name: 'Khalil Al-Hussary' },
-  { id: 'ar.ibrahimakhbar', name: 'Ibrahim Al-Akhdar' },
-  { id: 'ar.abdullahbasfar', name: 'Abdullah Basfar' },
-  { id: 'ar.hanirifai', name: 'Hani Ar-Rifai' },
-  { id: 'ar.muhammadayyoub', name: 'Muhammad Ayyoub' },
-  { id: 'ar.salahbukhatir', name: 'Salah Bukhatir' },
-  { id: 'ar.alghamdi', name: 'Saad Al-Ghamdi' },
-  { id: 'ar.tablawi', name: 'Mohamed Al-Tablawi' }
+  { id: 'ar.muhammadayyoub', name: 'Muhammad Ayyoub' }
 ];
+
 
 // ---------- Social / share links ----------
 // TODO(Imran): এই লিংকগুলো আপনার আসল ওয়েবসাইট, ফেসবুক পেজ এবং ইউটিউব চ্যানেলের
