@@ -23,7 +23,7 @@ async function runSearch(q){
   searchResults.innerHTML = `<div class="loader"><div class="spinner"></div><span>খোঁজা হচ্ছে...</span></div>`;
   incrementSearchCount();
   try{
-    const res = await fetch(`${API}/search/${encodeURIComponent(q)}/all/bn.bengali`);
+    const res = await fetch(`${API}/search/${encodeURIComponent(q)}/all/${state.translationEdition}`);
     const data = await res.json();
     const matches = (data.data && data.data.matches) || [];
     if(matches.length === 0){
