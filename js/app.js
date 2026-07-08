@@ -62,12 +62,29 @@ function initInstallPrompt(){
   window.addEventListener('appinstalled', () => { btn.style.display = 'none'; });
 }
 
+// ---------- Keep header fixed on top: measure its real height (it can
+// wrap to two lines on small screens) and push page content down by
+// exactly that much, so nothing is hidden underneath it. ----------
+function initHeaderOffset(){
+  const header = document.querySelector('header');
+  if(!header) return;
+  const setOffset = () => {
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+  };
+  setOffset();
+  window.addEventListener('resize', setOffset);
+  window.addEventListener('orientationchange', setOffset);
+  // Re-measure once web fonts finish loading, since font swap can change header height.
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setOffset);
+}
+
 // ---------- App init ----------
 (async function init(){
   loadPrefs();
   if(typeof initAuth === 'function') initAuth();
   initTheme();
   initFontControls();
+  initHeaderOffset();
   initNav();
   initMenu();
   initTopics();
