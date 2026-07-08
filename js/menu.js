@@ -31,6 +31,45 @@ function wireModalBackdrop(id){
   el.addEventListener('click', (e) => { if(e.target === el) closeModal(id); });
 }
 
+// ---- A properly-styled replacement for the browser's native prompt() ----
+// window.prompt() shows the raw site address ("localhost:8899 says…"),
+// which looks broken/unprofessional. This builds the same little app-modal
+// box used everywhere else, with a text/number field, so every "type a
+// value" moment in the app looks consistent.
+function showInputBox({title, placeholder, defaultValue, confirmLabel, inputType, onConfirm}){
+  const old = document.getElementById('dynInputModal');
+  if(old) old.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'app-modal';
+  wrap.id = 'dynInputModal';
+  wrap.style.display = 'flex';
+  wrap.innerHTML = `
+    <div class="app-modal-box input-box-modal">
+      <div class="app-modal-head">
+        <h3>${title}</h3>
+        <button class="app-modal-close" id="dynInputClose">✕</button>
+      </div>
+      <div class="app-modal-body">
+        <input type="${inputType||'text'}" class="input-box-field" id="dynInputField" placeholder="${placeholder||''}" value="${defaultValue||''}">
+        <div class="input-box-actions">
+          <button class="tw-cancel-btn" id="dynInputCancel">বাতিল</button>
+          <button class="tw-save-btn" id="dynInputSave">${confirmLabel||'ঠিক আছে'}</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const remove = () => wrap.remove();
+  wrap.addEventListener('click', (e) => { if(e.target === wrap) remove(); });
+  document.getElementById('dynInputClose').onclick = remove;
+  document.getElementById('dynInputCancel').onclick = remove;
+  const field = document.getElementById('dynInputField');
+  const submit = () => { const v = field.value.trim(); if(v){ remove(); onConfirm(v); } };
+  document.getElementById('dynInputSave').onclick = submit;
+  field.addEventListener('keydown', (e) => { if(e.key === 'Enter') submit(); });
+  field.focus();
+  field.select();
+}
+
 // ================= Language / i18n =================
 function applyLanguage(lang){
   state.language = (lang === 'en') ? 'en' : 'bn';
