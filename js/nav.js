@@ -44,20 +44,25 @@ function initHomeSubtabs(){
   });
 }
 
-// ---------- Library: sub-tabs (Reserved / History / Offline) ----------
+// ---------- Library: sub-tabs (Reserved / Notes / History / Offline) ----------
 function renderActiveLibraryTab(){
   const container = document.getElementById('libraryListContainer');
   if(document.getElementById('libTabBookmarks').classList.contains('active')) renderBookmarksList(container);
+  else if(document.getElementById('libTabNotes').classList.contains('active')) renderNotesList(container);
   else if(document.getElementById('libTabHistory').classList.contains('active')) renderHistoryList(container);
   else renderOfflineList(container);
 }
 
 function initLibraryTabs(){
   const container = document.getElementById('libraryListContainer');
-  const tabs = ['libTabBookmarks','libTabHistory','libTabOffline'];
+  const tabs = ['libTabBookmarks','libTabNotes','libTabHistory','libTabOffline'];
   document.getElementById('libTabBookmarks').onclick = () => {
     tabs.forEach(id => document.getElementById(id).classList.toggle('active', id === 'libTabBookmarks'));
     renderBookmarksList(container);
+  };
+  document.getElementById('libTabNotes').onclick = () => {
+    tabs.forEach(id => document.getElementById(id).classList.toggle('active', id === 'libTabNotes'));
+    renderNotesList(container);
   };
   document.getElementById('libTabHistory').onclick = () => {
     tabs.forEach(id => document.getElementById(id).classList.toggle('active', id === 'libTabHistory'));
@@ -88,6 +93,7 @@ function initMoreDrawer(){
 
   // Live-backed drawer items (implemented in js/menu.js).
   document.getElementById('drawerPrayerTimes').onclick = () => { close(); openPrayerModal(); };
+  document.getElementById('drawerTaraweeh').onclick = () => { close(); openTaraweehModal(); };
   document.getElementById('drawerDictionary').onclick = () => { close(); openDictionaryModal(); };
   document.getElementById('drawerSettings').onclick = () => { close(); openSettingsModal(); };
   document.getElementById('drawerShare').onclick = () => { close(); shareApp(); };
