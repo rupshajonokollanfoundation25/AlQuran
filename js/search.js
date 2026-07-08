@@ -21,6 +21,7 @@ async function runSearch(q){
   searchPanel.style.display='flex';
   searchTitle.textContent = `"${q}" এর জন্য ফলাফল`;
   searchResults.innerHTML = `<div class="loader"><div class="spinner"></div><span>খোঁজা হচ্ছে...</span></div>`;
+  incrementSearchCount();
   try{
     const res = await fetch(`${API}/search/${encodeURIComponent(q)}/all/bn.bengali`);
     const data = await res.json();
