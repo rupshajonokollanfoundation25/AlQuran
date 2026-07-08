@@ -163,6 +163,30 @@ function renderNotesList(container){
   });
 }
 
+// When opening a surah from the "Offline" list, make sure playback uses the
+// SAME reciter that was active when the audio was downloaded — otherwise
+// currentAudioUrl() in player.js builds a URL for whatever reciter happens to
+// be selected right now, that file was never cached, and playback silently
+// fails while truly offline (even though the download itself succeeded).
+//
+// We also MUST switch back to the "home" view first (goToView('home')),
+// exactly like openSurahAndScrollTo() does. openSurah() only toggles
+// readerArea's own display, but readerArea lives inside the "view-home"
+// section, which stays hidden (.view{display:none}) while the Library tab
+// is active. Without this, the reader/play button render correctly in the
+// DOM but the whole section is invisible, so taps on it appear to do
+// nothing at all.
+function openOfflineSurah(entry){
+  if(entry.reciter && entry.reciter !== state.reciter){
+    state.reciter = entry.reciter;
+    saveReciter();
+    const reciterSelect = document.getElementById('reciterSelect');
+    if(reciterSelect) reciterSelect.value = entry.reciter;
+  }
+  goToView('home');
+  openSurah(entry.surah);
+}
+
 // Shows surahs that have been downloaded for offline listening, so the
 // user can see at a glance what's actually saved on this device (and undo
 // a download to free up space) — separate from the plain surah/juz lists.
@@ -189,8 +213,8 @@ function renderOfflineList(container){
       </div>
       <div class="li-meta">${timeAgoBn(entry.ts)}</div>
       <button class="offline-remove-btn" title="Delete from offline">Delete</button>`;
-    item.querySelector('.li-text').onclick = () => openSurah(entry.surah);
-    item.querySelector('.badge-num').onclick = () => openSurah(entry.surah);
+    item.querySelector('.li-text').onclick = () => openOfflineSurah(entry);
+    item.querySelector('.badge-num').onclick = () => openOfflineSurah(entry);
     item.querySelector('.offline-remove-btn').onclick = async (e) => {
       e.stopPropagation();
       const btn = e.currentTarget;
