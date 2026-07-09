@@ -1,8 +1,11 @@
 // ---------- Ramadan mode + Taraweeh tracker ----------
-// Ramadan mode is a purely visual theme layer (a data-ramadan="on" attribute
-// on <body>, styled in style.css) plus it surfaces the Taraweeh tracker.
-// The tracker itself works year-round though — no need to gate it strictly
-// to the month of Ramadan, since users may want to log Qiyam/Tarawih any time.
+// Ramadan mode is a visual decoration layer (a data-ramadan="on" attribute
+// on <body>, styled in css/style.css) that dresses the whole app up for the
+// month: a twinkling starfield, a shimmering purple/gold header & bottom
+// nav, a "রমজান মুবারক" banner on Home, and a gold glow on key cards — plus
+// it surfaces the Taraweeh tracker. The tracker itself works year-round
+// though — no need to gate it strictly to the month of Ramadan, since users
+// may want to log Qiyam/Tarawih any time.
 
 function applyRamadanVisual(){
   document.body.setAttribute('data-ramadan', state.ramadanMode ? 'on' : 'off');
@@ -140,4 +143,6 @@ function closeTaraweehEditPanel(){
 function initRamadan(){
   initRamadanToggle();
   initTaraweehModal();
+  const bannerBtn = document.getElementById('ramadanBannerBtn');
+  if(bannerBtn) bannerBtn.onclick = openTaraweehModal;
 }
