@@ -6,9 +6,28 @@ const API = 'https://api.alquran.cloud/v1';
 const AUDIO_CDN = 'https://cdn.islamic.network/quran/audio/128';
 const PRAYER_API = 'https://api.aladhan.com/v1';
 
+// ---------- Theme gallery ----------
+// Each theme is a full, self-consistent design (colors, corner shape, and a
+// background glow), not just a light/dark recolor — see the matching
+// body[data-theme="..."] block in css/style.css for the actual values.
+// `dark` marks themes that sit on a dark base, which also adds the
+// .theme-dark-accent class to body so a handful of accent colors switch to
+// gold for contrast, same as the old dedicated "night mode" toggle did.
+// `swatch` is 3 representative colors, used to draw the little preview
+// strip on each card in the theme picker.
+const THEMES = [
+  { id:'emerald', nameKey:'theme_emerald', descKey:'theme_emerald_desc', dark:false, swatch:['#FBF6EC','#0E3B36','#C0973A'] },
+  { id:'night',   nameKey:'theme_night',   descKey:'theme_night_desc',   dark:true,  swatch:['#0F1F1B','#123A34','#D9B45E'] },
+  { id:'royal',   nameKey:'theme_royal',   descKey:'theme_royal_desc',   dark:true,  swatch:['#170F26','#3D2470','#E3B854'] },
+  { id:'desert',  nameKey:'theme_desert',  descKey:'theme_desert_desc',  dark:false, swatch:['#FBF1E4','#B5581F','#C9932F'] },
+  { id:'ocean',   nameKey:'theme_ocean',   descKey:'theme_ocean_desc',   dark:false, swatch:['#EEF6F8','#116E8C','#E0A94B'] },
+  { id:'amoled',  nameKey:'theme_amoled',  descKey:'theme_amoled_desc',  dark:true,  swatch:['#000000','#101010','#E6B94D'] },
+  { id:'rose',    nameKey:'theme_rose',    descKey:'theme_rose_desc',    dark:false, swatch:['#FDF3F5','#B5476B','#CDA15A'] }
+];
+
 // Bump the version suffix any time app-shell files change so the service
 // worker picks up a fresh copy instead of serving a stale cached version.
-const SW_VERSION = 'v23';
+const SW_VERSION = 'v24';
 const SHELL_CACHE_NAME = `qr-shell-${SW_VERSION}`;
 const API_CACHE_NAME = `qr-api-${SW_VERSION}`;
 const AUDIO_CACHE_NAME = `qr-audio-${SW_VERSION}`;
@@ -188,7 +207,15 @@ const I18N = {
     prayer_manual: 'ম্যানুয়ালি শহর লিখুন', prayer_manual_go: 'খুঁজুন',
     dict_title: 'অভিধান', dict_search_ph: 'শব্দ খুঁজুন...',
     help_title: 'সাহায্য ও সহযোগিতা',
-    translation_picker_title: 'অনুবাদের ভাষা নির্বাচন করুন', lang_search_ph: 'ভাষা খুঁজুন...'
+    translation_picker_title: 'অনুবাদের ভাষা নির্বাচন করুন', lang_search_ph: 'ভাষা খুঁজুন...',
+    theme_picker_title: 'থিম বাছাই করুন', settings_theme_pick: 'থিম বাছাই করুন',
+    theme_emerald: 'পান্না', theme_emerald_desc: 'উষ্ণ পার্চমেন্ট, তিল ও সোনালি — মূল ডিজাইন',
+    theme_night: 'রাত্রি', theme_night_desc: 'গাঢ় সবুজ পটভূমিতে নরম সোনালি — চোখের আরাম',
+    theme_royal: 'রাজকীয়', theme_royal_desc: 'গাঢ় বেগুনি ও সোনালি, জমকালো গোলাকার নকশা',
+    theme_desert: 'মরুভূমি', theme_desert_desc: 'উষ্ণ বালুরঙ ও পোড়ামাটি, ধারালো জ্যামিতিক কোণ',
+    theme_ocean: 'সাগর', theme_ocean_desc: 'শান্ত নীল-সবুজ, নরম কাচের মতো গোলাকার নকশা',
+    theme_amoled: 'মিডনাইট', theme_amoled_desc: 'নিখাদ কালো পটভূমি, উজ্জ্বল সোনালি হাইলাইট',
+    theme_rose: 'গোলাপবাগ', theme_rose_desc: 'কোমল গোলাপি আভা, স্বপ্নিল গোলাকার নকশা'
   },
   en: {
     app_name: 'Quran Bangla',
@@ -205,7 +232,15 @@ const I18N = {
     prayer_manual: 'Enter city manually', prayer_manual_go: 'Search',
     dict_title: 'Dictionary', dict_search_ph: 'Search a word...',
     help_title: 'Help & Support',
-    translation_picker_title: 'Select translation language', lang_search_ph: 'Search language...'
+    translation_picker_title: 'Select translation language', lang_search_ph: 'Search language...',
+    theme_picker_title: 'Choose a theme', settings_theme_pick: 'Choose a theme',
+    theme_emerald: 'Emerald', theme_emerald_desc: 'Warm parchment, teal & gold — the original design',
+    theme_night: 'Night', theme_night_desc: 'Deep teal background with soft gold — easy on the eyes',
+    theme_royal: 'Royal', theme_royal_desc: 'Deep purple & gold, plush rounded design',
+    theme_desert: 'Desert', theme_desert_desc: 'Warm sand & terracotta, crisp geometric corners',
+    theme_ocean: 'Ocean', theme_ocean_desc: 'Calm blue-teal, soft glassy rounded design',
+    theme_amoled: 'Midnight', theme_amoled_desc: 'True black background with vivid gold highlights',
+    theme_rose: 'Rose Garden', theme_rose_desc: 'Soft blush pink glow, dreamy rounded design'
   },
   ar: {
     app_name: 'القرآن الكريم',
