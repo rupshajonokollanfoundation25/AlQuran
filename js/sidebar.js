@@ -251,7 +251,7 @@ function renderAyahOfDay(){
   const todayKey = new Date().toDateString();
   let cached = null;
   try{
-    const raw = localStorage.getItem('qr_aod_cache');
+    const raw = IDBKV.get('qr_aod_cache');
     if(raw){
       const parsed = JSON.parse(raw);
       if(parsed && parsed.date === todayKey && parsed.s === s && parsed.a === a) cached = parsed;
@@ -283,7 +283,7 @@ function renderAyahOfDay(){
     const arabic = arRes && arRes.data ? arRes.data.text : '';
     const bengali = bnRes && bnRes.data ? bnRes.data.text : '';
     renderCard(arabic, bengali);
-    try{ localStorage.setItem('qr_aod_cache', JSON.stringify({ date: todayKey, s, a, edition: state.translationEdition, arabic, bengali })); }catch(e){}
+    try{ IDBKV.set('qr_aod_cache', JSON.stringify({ date: todayKey, s, a, edition: state.translationEdition, arabic, bengali })); }catch(e){}
   }).catch(() => {
     card.innerHTML = `<div class="aod-head"><span class="aod-badge">✦ আজকের আয়াত</span></div><div class="aod-loading">লোড করা যায়নি, ইন্টারনেট সংযোগ পরীক্ষা করুন।</div>`;
     card.onclick = null;
