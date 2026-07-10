@@ -4,10 +4,10 @@
 const VAPID_KEY = 'BJaGAL1IqMs2-nf-mT5VYK8fF1PDTZoOjVCxZnNsuPXglufBP1adCqn1Ps1iHk-YFb050bPoiTswAFvMUeZ8p-Y';
 
 function getDeviceId(){
-  let id = localStorage.getItem('qr_device_id');
+  let id = IDBKV.get('qr_device_id');
   if(!id){
     id = (crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Date.now() + '-' + Math.random().toString(16).slice(2));
-    localStorage.setItem('qr_device_id', id);
+    IDBKV.set('qr_device_id', id);
   }
   return id;
 }
