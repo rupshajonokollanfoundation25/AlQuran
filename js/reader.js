@@ -27,7 +27,7 @@ let translationEditionsCache = null;
 async function loadTranslationEditions(){
   if(translationEditionsCache) return translationEditionsCache;
   try{
-    const raw = localStorage.getItem(LS_KEYS.translationEditions);
+    const raw = IDBKV.get(LS_KEYS.translationEditions);
     if(raw){
       const parsed = JSON.parse(raw);
       if(Array.isArray(parsed) && parsed.length) translationEditionsCache = parsed;
@@ -38,7 +38,7 @@ async function loadTranslationEditions(){
     const data = (await res.json()).data;
     if(Array.isArray(data) && data.length){
       translationEditionsCache = data;
-      try{ localStorage.setItem(LS_KEYS.translationEditions, JSON.stringify(data)); }catch(e){}
+      try{ IDBKV.set(LS_KEYS.translationEditions, JSON.stringify(data)); }catch(e){}
     }
   }catch(e){ /* offline / network error — fall back to whatever was cached above */ }
   return translationEditionsCache || [];
