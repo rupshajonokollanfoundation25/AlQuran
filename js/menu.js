@@ -17,10 +17,11 @@ function closeModal(id){
   document.removeEventListener('keydown', modalEscHandler);
   if(id === 'prayerModal') stopPrayerTicker();
   if(id === 'qiblaModal' && typeof stopQiblaCompass === 'function') stopQiblaCompass();
+  if(id === 'themeBuilderModal' && typeof tbCancelIfUnsaved === 'function') tbCancelIfUnsaved();
 }
 function modalEscHandler(e){
   if(e.key === 'Escape'){
-    ['settingsModal','prayerModal','qiblaModal','dictionaryModal','helpModal','taraweehModal','langPickerModal','themePickerModal','compareTrModal','surahInfoModal'].forEach(id => {
+    ['settingsModal','prayerModal','qiblaModal','dictionaryModal','helpModal','taraweehModal','langPickerModal','themePickerModal','compareTrModal','surahInfoModal','downloadManagerModal','themeBuilderModal'].forEach(id => {
       const el = document.getElementById(id);
       if(el && el.style.display === 'flex') closeModal(id);
     });
