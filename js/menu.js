@@ -77,6 +77,7 @@ function showInputBox({title, placeholder, defaultValue, confirmLabel, inputType
 function applyLanguage(lang){
   state.language = I18N[lang] ? lang : 'bn';
   saveLanguage();
+  trackLanguageUsed(state.language);
   const dict = I18N[state.language];
   const fallback = I18N.en;
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -325,6 +326,7 @@ function initSettingsModal(){
         notifyChk.checked = false;
         return;
       }
+      markPrayerNotifyEverEnabled();
     } else {
       disablePrayerPush();
     }
@@ -346,6 +348,7 @@ function initSettingsModal(){
     twChk.onchange = () => {
       state.tajweedMode = twChk.checked;
       saveTajweedMode();
+      if(state.tajweedMode) markTajweedUsed();
       reopenCurrentReaderView();
     };
   }
@@ -414,6 +417,7 @@ async function openTranslationsComparePicker(){
         } else {
           state.translationEditions = state.translationEditions.filter(s => s !== id);
         }
+        if(state.translationEditions.length >= 2) markCompareUsed();
         cb.closest('.compare-tr-item').classList.toggle('active', cb.checked);
         saveTranslationEditionsSelected();
         syncCompareTrLabel();
