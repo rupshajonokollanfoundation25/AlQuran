@@ -338,25 +338,36 @@ function renderHomeStreakRing(){
   const todayDone = todaySec > 0;
   const streak = computeStreak(activity);
   const milestone = nextMilestone(streak);
-  const r = 26, circumference = 2 * Math.PI * r;
+  const r = 30, circumference = 2 * Math.PI * r;
   const frac = milestone > 0 ? Math.min(1, streak / milestone) : 0;
   const dashoffset = circumference * (1 - frac);
   box.innerHTML = `
     <div class="streak-ring-card${todayDone ? ' active' : ''}" id="streakRingCard">
-      <svg class="streak-ring-svg" width="64" height="64" viewBox="0 0 64 64">
-        <circle class="srs-track" cx="32" cy="32" r="${r}" fill="none" stroke-width="6"/>
-        <circle class="srs-fill" cx="32" cy="32" r="${r}" fill="none" stroke-width="6"
-          stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}" stroke-linecap="round"/>
-      </svg>
-      <div class="streak-ring-center">
-        <i class="fa-solid fa-fire"></i>
-        <span>${toBn(streak)}</span>
+      <div class="streak-ring-wrap">
+        <svg class="streak-ring-svg" width="72" height="72" viewBox="0 0 72 72">
+          <defs>
+            <linearGradient id="srsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--gold-soft)"/>
+              <stop offset="100%" stop-color="var(--gold)"/>
+            </linearGradient>
+          </defs>
+          <circle class="srs-track" cx="36" cy="36" r="${r}" fill="none" stroke-width="6"/>
+          <circle class="srs-fill" cx="36" cy="36" r="${r}" fill="none" stroke-width="6"
+            stroke="${todayDone ? 'url(#srsGrad)' : 'var(--ink-soft)'}"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}" stroke-linecap="round"/>
+        </svg>
+        <div class="streak-ring-center">
+          <i class="fa-solid fa-fire"></i>
+          <span class="srn-num">${toBn(streak)}</span>
+          <span class="srn-label">দিন</span>
+        </div>
       </div>
       <div class="streak-ring-text">
-        <div class="streak-ring-title">${streak > 0 ? 'বর্তমান স্ট্রিক' : 'আজই শুরু করুন'}</div>
+        <div class="streak-ring-title">${streak > 0 ? `${toBn(streak)} দিনের স্ট্রিক চলছে` : 'আজই স্ট্রিক শুরু করুন'}</div>
         <div class="streak-ring-sub">${todayDone
           ? `পরবর্তী লক্ষ্য ${toBn(milestone)} দিন — চালিয়ে যান!`
           : 'আজ একটি আয়াত পড়ে/শুনে স্ট্রিক বজায় রাখুন'}</div>
+        <div class="streak-ring-progress"><div class="srp-fill" style="width:${Math.round(frac*100)}%"></div></div>
       </div>
     </div>`;
   document.getElementById('streakRingCard').onclick = () => goToView('stats');
