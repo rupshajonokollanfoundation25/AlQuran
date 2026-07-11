@@ -222,16 +222,23 @@ function openOfflineSurah(entry){
 function renderOfflineList(container){
   if(!container) return;
   const validEntries = state.offlineSurahs.filter(o => Number.isInteger(o.surah) && o.surah >= 1 && o.surah <= 114);
+  const managerLinkHtml = `<button class="settings-btn" id="dlmOpenFromLibrary" style="width:100%;justify-content:center;margin-bottom:10px;">
+    <i class="fa-solid fa-cloud-arrow-down"></i> <span>ডাউনলোড ম্যানেজার খুলুন</span>
+  </button>`;
   if(!validEntries.length){
-    container.innerHTML = emptyStateHtml({
+    container.innerHTML = managerLinkHtml + emptyStateHtml({
       icon: 'offline',
       title: 'এখনও কোনো সূরা অফলাইনে সংরক্ষণ করা হয়নি',
-      subtitle: 'একটি সূরা খুলে "⬇ অফলাইনে সংরক্ষণ করুন" বাটনে চাপুন।'
+      subtitle: 'ডাউনলোড ম্যানেজার থেকে যেকোনো সূরা আগে থেকেই সংরক্ষণ করে রাখা যায়।'
     });
+    const btn = document.getElementById('dlmOpenFromLibrary');
+    if(btn) btn.onclick = () => { if(typeof openDownloadManager === 'function') openDownloadManager(); };
     return;
   }
   const sorted = [...validEntries].sort((a,b) => b.ts - a.ts);
-  container.innerHTML = '';
+  container.innerHTML = managerLinkHtml;
+  const managerBtn = document.getElementById('dlmOpenFromLibrary');
+  if(managerBtn) managerBtn.onclick = () => { if(typeof openDownloadManager === 'function') openDownloadManager(); };
   sorted.forEach(entry => {
     const s = state.surahList.find(x => x.number === entry.surah);
     const title = s ? (surahNamesBn[entry.surah-1] || s.englishName) : ('সূরা ' + entry.surah);
