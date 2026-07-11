@@ -1,6 +1,6 @@
 // ---------- Ramadan mode + Taraweeh tracker ----------
 // Ramadan mode is a visual decoration layer (a data-ramadan="on" attribute
-// on <body>, styled in css/style.css) that dresses the whole app up for the
+// on <body>, styled in css/ramadan.css) that dresses the whole app up for the
 // month: a twinkling starfield, a shimmering purple/gold header & bottom
 // nav, a "রমজান মুবারক" banner on Home, and a gold glow on key cards — plus
 // it surfaces the Taraweeh tracker. The tracker itself works year-round
