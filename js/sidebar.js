@@ -210,8 +210,7 @@ function openOfflineSurah(entry){
   if(entry.reciter && entry.reciter !== state.reciter){
     state.reciter = entry.reciter;
     saveReciter();
-    const reciterSelect = document.getElementById('reciterSelect');
-    if(reciterSelect) reciterSelect.value = entry.reciter;
+    if(typeof updateReciterLabels === 'function') updateReciterLabels();
   }
   goToView('home');
   openSurah(entry.surah);
