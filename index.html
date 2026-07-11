@@ -101,9 +101,12 @@
     <div id="readerArea" style="display:none;">
       <button class="back-btn" id="readerBackBtn">← ফিরে যান</button>
       <div class="toolbar" id="readerToolbar" style="display:none;">
-        <button class="icon-btn" id="decFont">front −</button>
-        <button class="icon-btn" id="incFont">front +</button>
+        <button class="icon-btn hafez-toggle-btn" id="hafezModeBtn" title="হাফেজ মোড — শুধু আরবি, মুসহাফ স্টাইল"><i class="fa-solid fa-book-quran"></i> <span>হাফেজ মোড</span></button>
+        <button class="icon-btn hafez-test-btn" id="hafezTestBtn" style="display:none;" title="মুখস্থ যাচাই — ট্যাপ করে আয়াত দেখুন"><i class="fa-solid fa-eye-slash"></i> <span>মুখস্থ যাচাই</span></button>
+        <button class="icon-btn" id="decFont" title="ফন্ট ছোট করুন">অ −</button>
+        <button class="icon-btn" id="incFont" title="ফন্ট বড় করুন">অ +</button>
       </div>
+      <div class="hafez-page-hint" id="hafezPageHint" style="display:none;"></div>
       <div id="mainContent"></div>
     </div>
   </section>
@@ -238,7 +241,7 @@
       <div class="settings-row">
         <div class="settings-label" data-i18n="settings_reciter">ডিফল্ট ক্বারী</div>
         <div class="settings-control">
-          <select id="settingsReciter"></select>
+          <button class="settings-btn" id="settingsReciterBtn"><i class="fa-solid fa-microphone-lines"></i> <span id="settingsReciterLabel">…</span></button>
         </div>
       </div>
       <div class="settings-row">
@@ -367,9 +370,11 @@
   </div>
   <div class="player-extra">
     <button class="speed-btn" id="speedBtn" title="Playback speed">১x</button>
-    <label class="reciter-field"><span class="reciter-ic">🎙️</span>
-      <select id="reciterSelect"></select>
-    </label>
+    <button class="reciter-field" id="reciterFieldBtn" type="button" title="ক্বারী পরিবর্তন করুন" aria-haspopup="dialog">
+      <span class="reciter-ic">🎙️</span>
+      <span class="reciter-field-label" id="reciterFieldLabel">…</span>
+      <i class="fa-solid fa-chevron-down reciter-caret"></i>
+    </button>
     <label><input type="checkbox" id="autoplayChk" checked><span class="lbl-full">Play the next verse.</span></label>
   </div>
 </div>
