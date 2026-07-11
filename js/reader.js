@@ -49,6 +49,7 @@ function initHafezToolbar(){
     hafezBtn.onclick = () => {
       state.hafezMode = !state.hafezMode;
       saveHafezMode();
+      if(state.hafezMode) markHafezUsed();
       applyHafezModeUI();
     };
   }
