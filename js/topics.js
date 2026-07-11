@@ -78,6 +78,7 @@ function renderTopicsList(){
 function openTopic(id){
   const topic = TOPICS.find(t => t.id === id);
   if(!topic) return;
+  trackTopicExplored(id);
   const listEl = document.getElementById('topicsListContainer');
   const detailEl = document.getElementById('topicDetailContainer');
   const body = document.getElementById('topicDetailBody');
