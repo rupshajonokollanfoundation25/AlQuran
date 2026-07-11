@@ -102,6 +102,7 @@ function initMoreDrawer(){
   document.getElementById('drawerQibla').onclick = () => { close(); openQiblaModal(); };
   document.getElementById('drawerTaraweeh').onclick = () => { close(); openTaraweehModal(); };
   document.getElementById('drawerDictionary').onclick = () => { close(); openDictionaryModal(); };
+  document.getElementById('drawerDownloads').onclick = () => { close(); openDownloadManager(); };
   document.getElementById('drawerSettings').onclick = () => { close(); openSettingsModal(); };
   document.getElementById('drawerShare').onclick = () => { close(); shareApp(); };
   document.getElementById('drawerHelp').onclick = () => { close(); openHelpModal(); };
