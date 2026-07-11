@@ -1,0 +1,216 @@
+// ---------- Shareable "মাসিক রিপোর্ট কার্ড" ----------
+// Draws a story-style (1080x1620) PNG on a <canvas>, entirely client-side —
+// no server, no external image library. Colors are pulled live from the
+// active theme's CSS variables, so the card always matches whatever theme
+// (emerald / dark / violet / etc, see js/app.js THEMES) the user has chosen.
+
+const SHARE_CARD_W = 1080, SHARE_CARD_H = 1620;
+
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function collectShareCardStats(){
+  const activity = loadActivity();
+  const ayahDaily = (typeof loadAyahDaily === 'function') ? loadAyahDaily() : {};
+  const month = (typeof monthlySummary === 'function') ? monthlySummary(activity, ayahDaily) : { minutes:0, ayahCount:0, monthName: BN_MONTHS ? BN_MONTHS[new Date().getMonth()] : '' };
+  const streak = computeStreak(activity);
+  const best = Math.max(state.bestStreak || 0, streak);
+  const ranked = (typeof topReciterByListenTime === 'function') ? topReciterByListenTime() : null;
+  const topReciter = ranked ? reciterMeta(ranked[0].id) : null;
+  const badgeUnlocked = typeof unlockedBadgesCount === 'function' ? unlockedBadgesCount() : 0;
+  const badgeTotal = typeof BADGES !== 'undefined' ? BADGES.length : 0;
+  return {
+    monthName: month.monthName,
+    ayahCount: month.ayahCount,
+    minutes: month.minutes,
+    streak, best,
+    topReciterName: topReciter ? topReciter.bn : null,
+    topReciterFlag: topReciter ? topReciter.flag : '',
+    badgeUnlocked, badgeTotal
+  };
+}
+
+async function drawReportCard(canvas){
+  canvas.width = SHARE_CARD_W;
+  canvas.height = SHARE_CARD_H;
+  const ctx = canvas.getContext('2d');
+
+  const teal = cssVar('--teal') || '#0E3B36';
+  const tealDeep = cssVar('--teal-deep') || '#092723';
+  const gold = cssVar('--gold') || '#C0973A';
+  const goldSoft = cssVar('--gold-soft') || '#E8D6A8';
+  const parchment = cssVar('--parchment') || '#FBF6EC';
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, 0, SHARE_CARD_H);
+  bg.addColorStop(0, tealDeep);
+  bg.addColorStop(1, teal);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, SHARE_CARD_W, SHARE_CARD_H);
+
+  // Subtle decorative corner glow
+  const glow = ctx.createRadialGradient(SHARE_CARD_W*0.85, 120, 20, SHARE_CARD_W*0.85, 120, 520);
+  glow.addColorStop(0, 'rgba(192,151,58,0.25)');
+  glow.addColorStop(1, 'rgba(192,151,58,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, SHARE_CARD_W, SHARE_CARD_H);
+
+  // Outer gold frame
+  ctx.strokeStyle = goldSoft;
+  ctx.lineWidth = 3;
+  roundRectPath(ctx, 40, 40, SHARE_CARD_W-80, SHARE_CARD_H-80, 32);
+  ctx.stroke();
+
+  // Ensure fonts are actually loaded before measuring/drawing text
+  try{
+    await Promise.all([
+      document.fonts.load('700 64px "Noto Serif Bengali"'),
+      document.fonts.load('700 40px "Noto Serif Bengali"'),
+      document.fonts.load('600 30px "Hind Siliguri"'),
+      document.fonts.load('400 26px "Hind Siliguri"')
+    ]);
+  }catch(e){}
+
+  const cx = SHARE_CARD_W/2;
+  ctx.textAlign = 'center';
+
+  // Header
+  ctx.fillStyle = gold;
+  ctx.font = '600 30px "Hind Siliguri"';
+  ctx.fillText('কুরআন বাংলা', cx, 150);
+
+  const stats = collectShareCardStats();
+
+  ctx.fillStyle = parchment;
+  ctx.font = '700 52px "Noto Serif Bengali"';
+  ctx.fillText(`${stats.monthName} মাসের রিপোর্ট`, cx, 225);
+
+  ctx.strokeStyle = goldSoft;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx-90, 258); ctx.lineTo(cx+90, 258);
+  ctx.stroke();
+
+  // Stat grid (2 columns x 3 rows)
+  const cards = [
+    { icon:'📖', val: toBn(stats.ayahCount), label:'আয়াত পাঠ' },
+    { icon:'⏱️', val: toBn(stats.minutes) + ' মিনিট', label:'সময় ব্যয়' },
+    { icon:'🔥', val: toBn(stats.streak) + ' দিন', label:'বর্তমান স্ট্রিক' },
+    { icon:'🏅', val: toBn(stats.best) + ' দিন', label:'সেরা স্ট্রিক' },
+    { icon:'🎧', val: stats.topReciterName || '—', label:'বেশি শোনা ক্বারী', small:true },
+    { icon:'🏆', val: `${toBn(stats.badgeUnlocked)}/${toBn(stats.badgeTotal)}`, label:'ব্যাজ অর্জিত' }
+  ];
+
+  const gridTop = 330, colW = (SHARE_CARD_W-160)/2, rowH = 235, pad = 80;
+  cards.forEach((c, i) => {
+    const col = i % 2, row = Math.floor(i/2);
+    const x = pad + col*colW;
+    const y = gridTop + row*rowH;
+    const boxW = colW - 30, boxH = rowH - 30;
+
+    ctx.fillStyle = 'rgba(251,246,236,0.06)';
+    roundRectPath(ctx, x, y, boxW, boxH, 22);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(232,214,168,0.35)';
+    ctx.lineWidth = 1.5;
+    roundRectPath(ctx, x, y, boxW, boxH, 22);
+    ctx.stroke();
+
+    const midX = x + boxW/2;
+    ctx.font = '46px sans-serif';
+    ctx.fillText(c.icon, midX, y+70);
+    ctx.fillStyle = parchment;
+    ctx.font = c.small ? '700 30px "Noto Serif Bengali"' : '700 40px "Noto Serif Bengali"';
+    ctx.fillText(c.val, midX, y + (c.small ? 128 : 130));
+    ctx.fillStyle = goldSoft;
+    ctx.font = '400 24px "Hind Siliguri"';
+    ctx.fillText(c.label, midX, y+172);
+  });
+
+  // Footer
+  ctx.fillStyle = goldSoft;
+  ctx.font = '400 26px "Hind Siliguri"';
+  ctx.fillText('আলহামদুলিল্লাহ — চালিয়ে যান 🌙', cx, SHARE_CARD_H-95);
+  ctx.font = '400 22px "Hind Siliguri"';
+  ctx.fillStyle = 'rgba(251,246,236,0.55)';
+  ctx.fillText('AlQuran • কুরআন বাংলা অ্যাপ', cx, SHARE_CARD_H-58);
+}
+
+async function shareOrDownloadCanvas(canvas){
+  const filename = `quran-report-${todayStr()}.png`;
+  canvas.toBlob(async (blob) => {
+    if(!blob) return;
+    const file = new File([blob], filename, { type: 'image/png' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      try{
+        await navigator.share({ files: [file], title: 'আমার কুরআন পাঠের রিপোর্ট' });
+        return;
+      }catch(e){ /* user cancelled or share failed — fall through to download */ }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('ছবি ডাউনলোড হয়েছে');
+  }, 'image/png');
+}
+
+function openShareCardModal(){
+  const old = document.getElementById('shareCardModal');
+  if(old) old.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'app-modal';
+  wrap.id = 'shareCardModal';
+  wrap.style.display = 'flex';
+  wrap.innerHTML = `
+    <div class="app-modal-box share-card-box">
+      <div class="app-modal-head">
+        <h3><i class="fa-solid fa-share-nodes"></i> মাসিক রিপোর্ট কার্ড</h3>
+        <button class="app-modal-close" id="shareCardClose">✕</button>
+      </div>
+      <div class="app-modal-body share-card-body">
+        <div class="share-card-canvas-wrap"><canvas id="shareCardCanvas"></canvas></div>
+        <div class="share-card-actions">
+          <button class="auth-cta-btn" id="shareCardShareBtn"><i class="fa-solid fa-share-nodes"></i> শেয়ার করুন</button>
+          <button class="settings-btn share-card-download-btn" id="shareCardDownloadBtn"><i class="fa-solid fa-download"></i> ডাউনলোড</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  const remove = () => wrap.remove();
+  wrap.addEventListener('click', (e) => { if(e.target === wrap) remove(); });
+  document.getElementById('shareCardClose').onclick = remove;
+
+  const canvas = document.getElementById('shareCardCanvas');
+  drawReportCard(canvas).then(() => {
+    document.getElementById('shareCardShareBtn').onclick = () => shareOrDownloadCanvas(canvas);
+    document.getElementById('shareCardDownloadBtn').onclick = () => shareOrDownloadCanvas(canvas);
+  });
+}
+
+// ---------- UI: "সামাজিক / অনুপ্রেরণামূলক" card on the stats page ----------
+function renderSocialShareSection(){
+  return `
+    <div class="section-title-sm">শেয়ার করুন</div>
+    <div class="stats-card share-cta-card">
+      <div class="share-cta-ic"><i class="fa-solid fa-award"></i></div>
+      <div class="share-cta-mid">
+        <div class="share-cta-title">আপনার মাসিক অগ্রগতি শেয়ার করুন</div>
+        <div class="share-cta-sub">একটি সুন্দর কার্ড তৈরি হবে — বন্ধুদের সাথে শেয়ার করে অনুপ্রাণিত করুন</div>
+      </div>
+      <button class="share-cta-btn" id="statsOpenShareCard"><i class="fa-solid fa-chevron-left"></i></button>
+    </div>`;
+}
