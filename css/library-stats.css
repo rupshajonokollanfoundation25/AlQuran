@@ -90,3 +90,55 @@ body.theme-dark-accent .badge-card.unlocked .badge-progress-v2{color:var(--gold)
 }
 .badges-grid-modal{grid-template-columns:repeat(3,1fr);}
 
+/* ---- Badges: summary progress bar ---- */
+.badges-summary{margin:0 4px 12px;}
+.badges-summary-text{font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;}
+.badges-summary-text b{color:var(--ink);font-family:'Noto Serif Bengali',serif;font-size:14px;}
+.badges-summary-bar{height:7px;border-radius:999px;background:var(--sage);overflow:hidden;}
+.badges-summary-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .4s ease;}
+
+/* ---- Badges: category headers inside the "সবগুলো দেখুন" modal ---- */
+.badge-cat-title{
+  font-family:'Noto Serif Bengali',serif;font-weight:700;font-size:13px;color:var(--gold);
+  margin:18px 2px 8px;text-transform:uppercase;letter-spacing:.03em;
+}
+.badge-cat-title:first-of-type{margin-top:2px;}
+
+/* ---- Badges: subtle unlocked shimmer ---- */
+.badge-card{position:relative;overflow:hidden;transition:transform .15s ease;}
+.badge-card.unlocked::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,transparent 30%,rgba(192,151,58,.18) 50%,transparent 70%);
+  background-size:200% 100%;animation:badgeShine 3.2s ease-in-out infinite;
+}
+@keyframes badgeShine{0%{background-position:160% 0;}100%{background-position:-60% 0;}}
+.badge-card.unlocked{box-shadow:0 2px 10px -4px rgba(192,151,58,.35);}
+
+/* ---- Time management: goal ring ---- */
+.time-goal-card{display:flex;align-items:center;gap:16px;}
+.time-goal-ring-wrap{position:relative;width:86px;height:86px;flex-shrink:0;}
+.time-goal-ring{transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:var(--sage);stroke-width:6;}
+.ring-fill{fill:none;stroke:var(--sage);stroke-width:6;stroke-linecap:round;transition:stroke-dashoffset .5s ease;}
+.time-goal-ring.active .ring-fill{stroke:var(--gold);}
+.time-goal-ring-center{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--ink-soft);
+}
+.time-goal-ring.active + .time-goal-ring-center{color:var(--gold);}
+.time-goal-text{flex:1;min-width:0;}
+
+/* ---- Time management: monthly heatmap ---- */
+.heatmap-card{overflow-x:auto;}
+.heatmap-grid{display:flex;gap:3px;width:max-content;}
+.heatmap-col{display:flex;flex-direction:column;gap:3px;}
+.heatmap-cell{width:11px;height:11px;border-radius:3px;background:var(--sage);}
+.heatmap-future{background:transparent;}
+.heatmap-lv0{background:var(--sage);}
+.heatmap-lv1{background:var(--gold-soft);}
+.heatmap-lv2{background:color-mix(in srgb, var(--gold) 55%, var(--gold-soft));}
+.heatmap-lv3{background:color-mix(in srgb, var(--gold) 80%, var(--teal) 10%);}
+.heatmap-lv4{background:var(--gold);}
+.heatmap-legend{display:flex;align-items:center;gap:4px;margin-top:10px;font-size:10.5px;color:var(--ink-soft);}
+.heatmap-legend .heatmap-cell{width:10px;height:10px;}
+
