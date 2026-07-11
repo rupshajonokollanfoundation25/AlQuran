@@ -19,6 +19,7 @@ function initRamadanToggle(){
   chk.onchange = () => {
     state.ramadanMode = chk.checked;
     saveRamadanMode();
+    if(state.ramadanMode) markRamadanModeUsed();
     applyRamadanVisual();
     showToast(state.ramadanMode ? '🌙 রমজান মোড চালু হয়েছে' : 'রমজান মোড বন্ধ করা হয়েছে');
   };
