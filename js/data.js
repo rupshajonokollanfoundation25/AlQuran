@@ -9,7 +9,7 @@ const PRAYER_API = 'https://api.aladhan.com/v1';
 // ---------- Theme gallery ----------
 // Each theme is a full, self-consistent design (colors, corner shape, and a
 // background glow), not just a light/dark recolor — see the matching
-// body[data-theme="..."] block in css/style.css for the actual values.
+// body[data-theme="..."] block in css/base.css for the actual values.
 // `dark` marks themes that sit on a dark base, which also adds the
 // .theme-dark-accent class to body so a handful of accent colors switch to
 // gold for contrast, same as the old dedicated "night mode" toggle did.
@@ -27,7 +27,7 @@ const THEMES = [
 
 // Bump the version suffix any time app-shell files change so the service
 // worker picks up a fresh copy instead of serving a stale cached version.
-const SW_VERSION = 'v28';
+const SW_VERSION = 'v30';
 const SHELL_CACHE_NAME = `qr-shell-${SW_VERSION}`;
 const API_CACHE_NAME = `qr-api-${SW_VERSION}`;
 const AUDIO_CACHE_NAME = `qr-audio-${SW_VERSION}`;
@@ -37,8 +37,30 @@ const APP_SHELL_FILES = [
   './',
   './index.html',
   './manifest.json',
-  './css/style.css',
+  './css/base.css',
+  './css/header.css',
+  './css/layout.css',
+  './css/reader.css',
+  './css/search.css',
+  './css/player.css',
+  './css/app-shell.css',
+  './css/planner.css',
+  './css/topics.css',
+  './css/library-stats.css',
+  './css/bottom-nav.css',
+  './css/drawer.css',
+  './css/modals.css',
+  './css/prayer.css',
+  './css/dictionary.css',
+  './css/help.css',
+  './css/ayah-of-day.css',
+  './css/notes.css',
+  './css/ramadan.css',
+  './css/auth.css',
+  './css/tajweed.css',
+  './css/qibla.css',
   './js/data.js',
+  './js/surah-info.js',
   './js/i18n/bn.js',
   './js/i18n/en.js',
   './js/i18n/ar.js',
