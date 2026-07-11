@@ -52,10 +52,10 @@ function renderAudioStatsSection(){
 
   if(!totalSec || !ranked){
     return `
-      <div class="section-title-sm">অডিও-সংক্রান্ত</div>
+      <div class="section-title-sm">Audio-related</div>
       <div class="stats-card audio-stats-empty">
         <i class="fa-solid fa-headphones-simple"></i>
-        <div class="audio-empty-text">এখনো কোনো তিলাওয়াত শোনা হয়নি — যেকোনো আয়াতে "Listen" চাপুন, এখানে আপনার শোনার পরিসংখ্যান জমা হবে।</div>
+        <div class="audio-empty-text">No recitation has been heard yet.</div>
       </div>`;
   }
 
@@ -81,24 +81,24 @@ function renderAudioStatsSection(){
   }).join('');
 
   return `
-    <div class="section-title-sm">অডিও-সংক্রান্ত</div>
+    <div class="section-title-sm">Audio-related</div>
     <div class="stats-card audio-hero-card">
       <div class="audio-hero-ic"><i class="fa-solid fa-headphones-simple"></i></div>
       <div class="audio-hero-mid">
-        <div class="stats-label">মোট শোনার সময়</div>
+        <div class="stats-label">Total listening time</div>
         <div class="stats-big">${formatDurationBn(totalSec)}</div>
       </div>
     </div>
     <div class="stats-card audio-top-card">
       <div class="audio-top-flag">${topFlag}</div>
       <div class="audio-top-mid">
-        <div class="stats-label">সবচেয়ে বেশি শোনা ক্বারী</div>
+        <div class="stats-label">Most listened to reciter</div>
         <div class="audio-top-name">${escapeHtml(topName)}</div>
       </div>
       <div class="audio-top-pct">${toBn(Math.round((top.seconds/totalSec)*100))}%</div>
     </div>
     <div class="stats-card">
-      <div class="stats-label" style="margin-bottom:12px;">ক্বারী অনুযায়ী শোনার সময়</div>
+      <div class="stats-label" style="margin-bottom:12px;">Listening time according to the reciter</div>
       ${rows}
     </div>`;
 }
