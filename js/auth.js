@@ -354,6 +354,31 @@ function mergeCloudIntoLocal(cloud){
     saveTaraweeh();
   }
 
+  // Extra badge-progress fields — same aggregate-only, no-content-identity rule.
+  if(typeof cloud.topicsExploredCount === 'number'){
+    state.topicsExploredFloor = Math.max(state.topicsExploredFloor || 0, cloud.topicsExploredCount);
+    try{ IDBKV.set(LS_KEYS.topicsExploredFloor, String(state.topicsExploredFloor)); }catch(e){}
+  }
+  if(Array.isArray(cloud.themesTried)){
+    state.themesTried = Array.from(new Set([...(state.themesTried||[]), ...cloud.themesTried]));
+    try{ IDBKV.set(LS_KEYS.themesTried, JSON.stringify(state.themesTried)); }catch(e){}
+  }
+  if(Array.isArray(cloud.languagesUsed)){
+    state.languagesUsed = Array.from(new Set([...(state.languagesUsed||[]), ...cloud.languagesUsed]));
+    try{ IDBKV.set(LS_KEYS.languagesUsed, JSON.stringify(state.languagesUsed)); }catch(e){}
+  }
+  const boolFlags = ['qiblaUsed','tajweedModeUsed','hafezModeUsed','translationCompareUsed','ramadanModeUsed','prayerNotifyEverEnabled','nightOwlDone','earlyBirdDone'];
+  boolFlags.forEach(flag => {
+    if(cloud[flag] === true && !state[flag]){
+      state[flag] = true;
+      try{ IDBKV.set(LS_KEYS[flag], '1'); }catch(e){}
+    }
+  });
+  if(typeof cloud.shareCount === 'number'){
+    state.shareCount = Math.max(state.shareCount || 0, cloud.shareCount);
+    try{ IDBKV.set(LS_KEYS.shareCount, String(state.shareCount)); }catch(e){}
+  }
+
   suppressNextSync = false;
 }
 
@@ -368,7 +393,20 @@ function buildSyncSnapshot(){
     bestStreak: state.bestStreak,
     ayahsReadCount: ayahsReadCount(),
     audioSurahsPlayedCount: (state.audioSurahsPlayed||[]).length,
-    taraweeh: state.taraweeh
+    taraweeh: state.taraweeh,
+    // Extra badge-progress fields, aggregate-only (see mergeCloudIntoLocal for the privacy rule)
+    topicsExploredCount: (state.topicsExplored||[]).length,
+    themesTried: state.themesTried || [],
+    languagesUsed: state.languagesUsed || [],
+    qiblaUsed: !!state.qiblaUsed,
+    tajweedModeUsed: !!state.tajweedModeUsed,
+    hafezModeUsed: !!state.hafezModeUsed,
+    translationCompareUsed: !!state.translationCompareUsed,
+    ramadanModeUsed: !!state.ramadanModeUsed,
+    prayerNotifyEverEnabled: !!state.prayerNotifyEverEnabled,
+    nightOwlDone: !!state.nightOwlDone,
+    earlyBirdDone: !!state.earlyBirdDone,
+    shareCount: state.shareCount || 0
   };
 }
 
