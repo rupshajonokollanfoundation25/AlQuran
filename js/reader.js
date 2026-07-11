@@ -129,6 +129,7 @@ async function openSurah(num){
     renderReader({
       header: { arName: arData.name, bnName: surahNamesBn[num-1] || arData.englishName, meta: `${arData.revelationType === 'Meccan' ? 'মাক্কী' : 'মাদানী'} · ${toBn(arData.numberOfAyahs)} আয়াত`, playLabel: `সম্পূর্ণ সূরা শুনুন` },
       showBismillah: num !== 1 && num !== 9,
+      surahInfo: surahInfoBn[num],
       ayahs
     });
     state.lastRead = { surah: num, ayah: ayahs[0] ? ayahs[0].numberInSurah : 1 };
@@ -210,7 +211,7 @@ async function openRuku(num){
   }
 }
 
-function renderReader({header, showBismillah, ayahs}){
+function renderReader({header, showBismillah, surahInfo, ayahs}){
   showReaderArea();
   readerToolbar.style.display='flex';
   state.playlist = ayahs.map(a => ({ key:`${a.surah}:${a.numberInSurah}`, globalNumber:a.number, surah:a.surah, numberInSurah:a.numberInSurah, title:(surahNamesBn[a.surah-1]||('সূরা '+a.surah)) }));
@@ -225,6 +226,16 @@ function renderReader({header, showBismillah, ayahs}){
       <button class="offline-btn${alreadyOffline ? ' downloaded' : ''}" id="offlineBtn">${alreadyOffline ? '✓ Saved offline' : '⬇ Save offline'}</button>
     </div>
   </div>`;
+  if(surahInfo){
+    html += `<div class="surah-info-box" id="surahInfoBox">
+      <button class="surah-info-toggle" id="surahInfoToggle" aria-expanded="false">
+        <span class="sit-icon">📖</span>
+        <span class="sit-label">সূরার পরিচিতি ও শানে নুযুল</span>
+        <span class="sit-chevron">▾</span>
+      </button>
+      <div class="surah-info-content" id="surahInfoContent" hidden>${surahInfo}</div>
+    </div>`;
+  }
   if(showBismillah) html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
   const compareMode = ayahs.length && ayahs[0].translations && ayahs[0].translations.length > 1;
   ayahs.forEach(a => {
@@ -259,6 +270,16 @@ function renderReader({header, showBismillah, ayahs}){
   mainContent.innerHTML = html;
   applyFontSize();
 
+  const surahInfoToggle = document.getElementById('surahInfoToggle');
+  if(surahInfoToggle){
+    surahInfoToggle.onclick = () => {
+      const content = document.getElementById('surahInfoContent');
+      const expanded = surahInfoToggle.getAttribute('aria-expanded') === 'true';
+      content.hidden = expanded;
+      surahInfoToggle.setAttribute('aria-expanded', String(!expanded));
+      document.getElementById('surahInfoBox').classList.toggle('open', !expanded);
+    };
+  }
   document.getElementById('playAllBtn').onclick = () => playAtIndex(0, true);
   const offlineBtn = document.getElementById('offlineBtn');
   if(offlineBtn) offlineBtn.onclick = () => downloadCurrentAudioForOffline(offlineBtn);
