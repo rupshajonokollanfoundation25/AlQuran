@@ -39,7 +39,7 @@
   <div class="wordmark"><span class="ar">قرآن</span><span class="bn" id="headerTitle">Quran Bangla</span></div>
   <div class="search-wrap">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input id="searchInput" type="text" placeholder="আয়াত খুঁজুন...">
+    <input id="searchInput" type="text" placeholder="আয়াত খুঁজুন (বাংলা বা আরবি)...">
   </div>
   <div class="header-actions">
     <span class="conn-status" id="connStatus"></span>
@@ -158,6 +158,7 @@
   <div class="drawer-list">
     <button class="drawer-item" id="drawerGoToAyah"><span class="di-ic"><i class="fa-solid fa-arrow-turn-up"></i></span> <span data-i18n="menu_goto_ayah">নির্দিষ্ট আয়াতে যান</span></button>
     <button class="drawer-item" id="drawerPrayerTimes"><span class="di-ic"><i class="fa-solid fa-clock"></i></span> <span data-i18n="menu_prayer_times">সালাতের সময়সূচি</span></button>
+    <button class="drawer-item" id="drawerQibla"><span class="di-ic"><i class="fa-solid fa-kaaba"></i></span> <span>কিবলার দিক</span></button>
     <button class="drawer-item" id="drawerTaraweeh"><span class="di-ic"><i class="fa-solid fa-moon"></i></span> <span>তারাবীহ ট্র্যাকার</span></button>
     <button class="drawer-item" id="drawerDictionary"><span class="di-ic"><i class="fa-solid fa-book-open"></i></span> <span data-i18n="menu_dictionary">অভিধান</span></button>
     <button class="drawer-item" id="drawerOtherApps"><span class="di-ic"><i class="fa-solid fa-mobile-screen-button"></i></span> <span data-i18n="menu_other_apps">আমাদের অন্যান্য অ্যাপস</span></button>
@@ -192,6 +193,18 @@
         <div class="settings-label" data-i18n="settings_translation">কুরআনের অনুবাদের ভাষা</div>
         <div class="settings-control">
           <button class="settings-btn" id="settingsTranslationBtn"><i class="fa-solid fa-book-quran"></i> <span id="settingsTranslationLabel">বাংলা</span></button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">তুলনামূলক অনুবাদ <span class="settings-subnote">(পাশাপাশি, সর্বোচ্চ ৩টি)</span></div>
+        <div class="settings-control">
+          <button class="settings-btn" id="settingsCompareTrBtn"><i class="fa-solid fa-layer-group"></i> <span id="settingsCompareTrLabel">বন্ধ</span></button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">তাজভীদ হাইলাইট <span class="settings-subnote">(আনুমানিক, শেখার সহায়ক)</span></div>
+        <div class="settings-control">
+          <label class="switch"><input type="checkbox" id="settingsTajweedMode"><span class="switch-slider"></span></label>
         </div>
       </div>
       <div class="settings-row">
@@ -285,6 +298,17 @@
   </div>
 </div>
 
+<!-- ================= Qibla direction modal ================= -->
+<div class="app-modal" id="qiblaModal" style="display:none;">
+  <div class="app-modal-box">
+    <div class="app-modal-head">
+      <h3><i class="fa-solid fa-kaaba"></i> <span>কিবলার দিক নির্দেশনা</span></h3>
+      <button class="app-modal-close" id="qiblaClose">✕</button>
+    </div>
+    <div class="app-modal-body" id="qiblaBody"></div>
+  </div>
+</div>
+
 <div class="search-panel" id="searchPanel" style="display:none;">
   <div class="search-box">
     <div class="search-box-head">
@@ -331,6 +355,20 @@
 <audio id="audioEl" preload="none"></audio>
 
 <script src="js/data.js"></script>
+<script src="js/i18n/bn.js"></script>
+<script src="js/i18n/en.js"></script>
+<script src="js/i18n/ar.js"></script>
+<script src="js/i18n/ur.js"></script>
+<script src="js/i18n/hi.js"></script>
+<script src="js/i18n/id.js"></script>
+<script src="js/i18n/tr.js"></script>
+<script src="js/i18n/fr.js"></script>
+<script src="js/i18n/es.js"></script>
+<script src="js/i18n/ru.js"></script>
+<script src="js/i18n/sw.js"></script>
+<script src="js/i18n/zh.js"></script>
+<script src="js/i18n/fa.js"></script>
+<script src="js/i18n/ms.js"></script>
 <script src="js/idb.js"></script>
 <script src="js/storage.js"></script>
 
@@ -353,6 +391,8 @@
 <script src="js/planner.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/ramadan.js"></script>
+<script src="js/tajweed.js"></script>
+<script src="js/qibla.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/app.js"></script>
