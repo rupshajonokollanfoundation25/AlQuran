@@ -141,9 +141,12 @@ function openLangPickerModal({titleKey, items, activeId, onPick}){
     const q = (filter || '').trim().toLowerCase();
     const filtered = !q ? items : items.filter(it => it.label.toLowerCase().includes(q) || (it.sub||'').toLowerCase().includes(q));
     listEl.innerHTML = filtered.length ? filtered.map(it => `
-      <button class="lang-picker-item${it.id === activeId ? ' active' : ''}" data-id="${it.id}">
-        <span class="lp-label">${it.label}</span>
-        ${it.sub ? `<span class="lp-sub">${it.sub}</span>` : ''}
+      <button class="lang-picker-item${it.id === activeId ? ' active' : ''}${it.icon ? ' has-avatar' : ''}" data-id="${it.id}">
+        ${it.icon ? `<span class="lp-avatar">${it.icon}</span>` : ''}
+        <span class="lp-text">
+          <span class="lp-label">${it.label}</span>
+          ${it.sub ? `<span class="lp-sub">${it.sub}</span>` : ''}
+        </span>
         ${it.id === activeId ? '<i class="fa-solid fa-check"></i>' : ''}
       </button>`).join('') : `<div class="lang-picker-empty">—</div>`;
     listEl.querySelectorAll('.lang-picker-item').forEach(btn => {
@@ -183,6 +186,43 @@ async function openTranslationLanguagePicker(){
       saveTranslationEdition();
       if(label) label.textContent = translationEditionLabel(identifier);
       reopenCurrentReaderView();
+    }
+  });
+}
+
+// ================= স্মার্ট ক্বারী (তিলাওয়াতকারী) পিকার =================
+// প্লেন <select> ড্রপডাউনের বদলে সার্চযোগ্য, প্রতিটি ক্বারীর বাংলা নাম/দেশ/ধরন
+// দেখানো একটি মডাল — প্লেয়ার-বার ও সেটিংস দুই জায়গা থেকেই একই ফাংশন খোলে,
+// তাই ক্বারী বদলালে সব জায়গায় সঙ্গে সঙ্গে সিঙ্ক থাকে।
+function reciterShortLabel(id){
+  const r = reciters.find(x => x.id === id);
+  return r ? r.bn : id;
+}
+function updateReciterLabels(){
+  const r = reciters.find(x => x.id === state.reciter);
+  const label = r ? `${r.flag ? r.flag + ' ' : ''}${r.bn}` : state.reciter;
+  const playerLabel = document.getElementById('reciterFieldLabel');
+  if(playerLabel) playerLabel.textContent = label;
+  const settingsLabel = document.getElementById('settingsReciterLabel');
+  if(settingsLabel) settingsLabel.textContent = label;
+}
+function openReciterPicker(){
+  const items = reciters.map(r => ({
+    id: r.id,
+    label: `${r.bn} — ${r.name}`,
+    sub: r.style || '',
+    icon: r.flag || '🎙️'
+  }));
+  openLangPickerModal({
+    titleKey: 'settings_reciter',
+    items,
+    activeId: state.reciter,
+    onPick: (id) => {
+      state.reciter = id;
+      saveReciter();
+      updateReciterLabels();
+      // চলমান তিলাওয়াত থাকলে সঙ্গে সঙ্গে নতুন ক্বারীর কণ্ঠে পুনরায় চালু করে।
+      if(state.playIndex >= 0 && state.isPlaying) playAtIndex(state.playIndex, true);
     }
   });
 }
@@ -227,16 +267,10 @@ function initSettingsModal(){
     });
   }
 
-  // Reciter select, kept in sync with the player's own reciter dropdown.
-  const recSel = document.getElementById('settingsReciter');
-  recSel.innerHTML = reciters.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-  recSel.value = state.reciter;
-  recSel.onchange = () => {
-    state.reciter = recSel.value;
-    saveReciter();
-    const playerSel = document.getElementById('reciterSelect');
-    if(playerSel) playerSel.value = recSel.value;
-  };
+  // স্মার্ট ক্বারী পিকার — প্লেয়ার-বারের বাটনের সাথে একই ফাংশন/লেবেল শেয়ার করে।
+  const recBtn = document.getElementById('settingsReciterBtn');
+  if(recBtn){ recBtn.onclick = openReciterPicker; }
+  updateReciterLabels();
 
   // Prayer calculation method
   const methodSel = document.getElementById('settingsPrayerMethod');
@@ -635,7 +669,8 @@ async function shareApp(){
 const FAQ_ITEMS = [
   { q: 'ইন্টারনেট ছাড়া কি অ্যাপটি ব্যবহার করা যাবে?', a: 'হ্যাঁ। একবার একটি সূরা খোলা বা শোনা হলে সেটি অফলাইনেও পড়া/শোনা যাবে। "লাইব্রেরি" ট্যাবের "Offline" অংশ থেকে যেকোনো সূরা আগে থেকেই ডাউনলোড করে রাখা যায়।' },
   { q: 'কীভাবে কোনো আয়াত সংরক্ষণ (Bookmark) করবো?', a: 'কোনো আয়াত পড়ার সময় "☆ সংরক্ষণ করুন" বাটনে চাপুন। এটি "লাইব্রেরি" ট্যাবে পাওয়া যাবে।' },
-  { q: 'ক্বারী (তিলাওয়াতকারী) কীভাবে পরিবর্তন করবো?', a: 'প্লেয়ার বারে বা সেটিংস থেকে "ডিফল্ট ক্বারী" অপশন থেকে পছন্দের ক্বারী বেছে নিন।' },
+  { q: 'ক্বারী (তিলাওয়াতকারী) কীভাবে পরিবর্তন করবো?', a: 'প্লেয়ার বারে বা সেটিংসে "ডিফল্ট ক্বারী"-তে ট্যাপ করলে ছবিসহ সার্চযোগ্য তালিকা খুলবে — সেখান থেকে পছন্দের ক্বারী বেছে নিন।' },
+  { q: 'হাফেজ মোড কী এবং কীভাবে ব্যবহার করবো?', a: 'কোনো সূরা/পৃষ্ঠা খুলে টুলবারে "হাফেজ মোড" চাপুন — অনুবাদ লুকিয়ে শুধু আরবি টেক্সট মুসহাফের মতো একটানা দেখাবে। এরপর "মুখস্থ যাচাই" চালু করলে আয়াতগুলো ঝাপসা হয়ে যাবে, নির্দিষ্ট আয়াত দেখতে তাতে ট্যাপ করুন।' },
   { q: 'অ্যাপটি মোবাইলে ইনস্টল করা যাবে কি?', a: 'হ্যাঁ, ব্রাউজারে "⬇ install app" বাটনে চাপ দিয়ে হোম স্ক্রিনে অ্যাপ আকারে যোগ করা যাবে।' },
   { q: 'সালাতের সময়সূচি সঠিক মনে না হলে কী করবো?', a: 'সেটিংস থেকে "নামাজের সময় হিসাবের পদ্ধতি" পরিবর্তন করে দেখুন — বিভিন্ন অঞ্চলে ভিন্ন হিসাব পদ্ধতি ব্যবহৃত হয়।' }
 ];
