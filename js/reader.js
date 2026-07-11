@@ -227,14 +227,11 @@ function renderReader({header, showBismillah, surahInfo, ayahs}){
     </div>
   </div>`;
   if(surahInfo){
-    html += `<div class="surah-info-box" id="surahInfoBox">
-      <button class="surah-info-toggle" id="surahInfoToggle" aria-expanded="false">
-        <span class="sit-icon">📖</span>
-        <span class="sit-label">সূরার পরিচিতি ও শানে নুযুল</span>
-        <span class="sit-chevron">▾</span>
-      </button>
-      <div class="surah-info-content" id="surahInfoContent" hidden>${surahInfo}</div>
-    </div>`;
+    html += `<button class="surah-info-trigger" id="surahInfoTrigger" type="button" aria-haspopup="dialog">
+      <span class="sit-icon"><i class="fa-solid fa-book-quran"></i></span>
+      <span class="sit-label">সূরার পরিচিতি ও শানে নুযুল</span>
+      <span class="sit-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+    </button>`;
   }
   if(showBismillah) html += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
   const compareMode = ayahs.length && ayahs[0].translations && ayahs[0].translations.length > 1;
@@ -270,15 +267,9 @@ function renderReader({header, showBismillah, surahInfo, ayahs}){
   mainContent.innerHTML = html;
   applyFontSize();
 
-  const surahInfoToggle = document.getElementById('surahInfoToggle');
-  if(surahInfoToggle){
-    surahInfoToggle.onclick = () => {
-      const content = document.getElementById('surahInfoContent');
-      const expanded = surahInfoToggle.getAttribute('aria-expanded') === 'true';
-      content.hidden = expanded;
-      surahInfoToggle.setAttribute('aria-expanded', String(!expanded));
-      document.getElementById('surahInfoBox').classList.toggle('open', !expanded);
-    };
+  const surahInfoTrigger = document.getElementById('surahInfoTrigger');
+  if(surahInfoTrigger){
+    surahInfoTrigger.onclick = () => openSurahInfoModal(header, surahInfo);
   }
   document.getElementById('playAllBtn').onclick = () => playAtIndex(0, true);
   const offlineBtn = document.getElementById('offlineBtn');
@@ -297,6 +288,76 @@ function renderReader({header, showBismillah, surahInfo, ayahs}){
   });
   syncPlayingUI();
   initAyahReadTracking();
+}
+
+// ---------- সূরার পরিচিতি ও শানে নুযুল — popup মোডাল ----------
+// surahInfoBn (js/surah-info.js) এর টেক্সটে গুরুত্বপূর্ণ শব্দ/নাম (নবী, স্থান,
+// ঘটনা, একক-উদ্ধৃতি চিহ্নে থাকা মূল শব্দ) স্বয়ংক্রিয়ভাবে হাইলাইট করার জন্য।
+const SURAH_INFO_HL_TERMS = [
+  // স্থান ও সময়কাল
+  'মক্কায়','মদীনায়','মক্কার','মদীনার','মক্কা','মদীনা','হেরা গুহায়','হেরা গুহা','নাখলা উপত্যকায়',
+  // নবী-রাসূলগণ
+  'ইব্রাহীম (আঃ)','মূসা (আঃ)','ঈসা (আঃ)','ইউসুফ (আঃ)','নূহ (আঃ)','হুদ (আঃ)','সালেহ (আঃ)','লূত (আঃ)',
+  'শুয়াইব (আঃ)','দাউদ (আঃ)','সুলাইমান (আঃ)','ইউনুস (আঃ)','ইয়াহইয়া (আঃ)','যাকারিয়া (আঃ)','আদম (আঃ)',
+  'মারইয়াম (আঃ)','খিযির (আঃ)','ইসমাঈল (আঃ)','আইয়ুব (আঃ)',
+  'ইব্রাহীম','মূসা','ঈসা','ইউসুফ','নূহ','হুদ','সালেহ','লূত','শুয়াইব','দাউদ','সুলাইমান','ইউনুস',
+  'ইয়াহইয়া','যাকারিয়া','মারইয়াম','খিযির','ইসমাঈল','আইয়ুব','যুলকারনাইন',
+  // নবীজী (সাঃ)
+  'নবীজীর (সাঃ)','নবীজীকে (সাঃ)','নবীজী (সাঃ)','নবীজীর','নবীজীকে','নবীজী',
+  // সাহাবা ও ঐতিহাসিক ব্যক্তিত্ব
+  'আয়েশা (রাঃ)','আবু বকর (রাঃ)','উমর ইবনুল খাত্তাব (রাঃ)','আবু লাহাব','আবু তালিব','খাদীজা (রাঃ)',
+  'জাফর ইবনে আবি তালিব (রাঃ)','ইমাম শাফিঈ (রহঃ)','উম্মে জামিল','আব্দুল্লাহ ইবনে উম্মে মাকতুম (রাঃ)',
+  'আব্দুল্লাহ ইবনে উবাই','খাওলা বিনতে সালাবা','হাতিব ইবনে আবি বালতাআ (রাঃ)','জুবাইর ইবনে মুতঈম',
+  'বিলকিস','ফিরআউন',
+  // বড় ঘটনা
+  'বদর যুদ্ধের','বদর যুদ্ধ','উহুদ যুদ্ধের','উহুদ যুদ্ধ','খন্দক (আহযাব) যুদ্ধের','তাবুক অভিযানের',
+  'মক্কা বিজয়ের','মক্কা বিজয়','হুদাইবিয়ার সন্ধির','হিজরতের','মিরাজের','লাইলাতুল কদর','ইফকের ঘটনা',
+  "'আমুল হুযন'",'আমুল হুযন'
+];
+function highlightSurahInfoText(text){
+  if(!text) return '';
+  const quoted = [];
+  // ১) একক-উদ্ধৃতি চিহ্নে '...' থাকা মূল শব্দগুলো (মূল লেখাতেই গুরুত্বপূর্ণ হিসেবে চিহ্নিত) আলাদা করে রাখা হয়
+  let working = text.replace(/'([^']+)'/g, (m, inner) => {
+    quoted.push(inner);
+    return `\u0000${quoted.length - 1}\u0000`;
+  });
+  // ২) প্রেক্ষাপটে গুরুত্বপূর্ণ নাম/স্থান/ঘটনা (দৈর্ঘ্য অনুযায়ী বড় থেকে ছোট ক্রমে, যাতে একে অপরকে না কাটে)
+  const terms = [...SURAH_INFO_HL_TERMS].sort((a, b) => b.length - a.length);
+  terms.forEach(term => {
+    if(!term || working.indexOf(term) === -1) return;
+    working = working.split(term).join(`\u0001${term}\u0001`);
+  });
+  working = working.replace(/\u0001([^\u0001]*)\u0001/g, (m, inner) => `<mark class="sit-hl">${inner}</mark>`);
+  working = working.replace(/\u0000(\d+)\u0000/g, (m, idx) => `<mark class="sit-hl">${quoted[Number(idx)]}</mark>`);
+  return working;
+}
+
+function openSurahInfoModal(header, surahInfo){
+  let modal = document.getElementById('surahInfoModal');
+  if(!modal){
+    modal = document.createElement('div');
+    modal.className = 'app-modal surah-info-modal';
+    modal.id = 'surahInfoModal';
+    modal.innerHTML = `
+      <div class="app-modal-box">
+        <div class="app-modal-head">
+          <h3><i class="fa-solid fa-book-quran"></i> সূরার পরিচিতি ও শানে নুযুল</h3>
+          <button class="app-modal-close" id="surahInfoModalClose">✕</button>
+        </div>
+        <div class="app-modal-body">
+          <div class="sit-modal-head" id="sitModalHead"></div>
+          <div class="sit-modal-text" id="sitModalText"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    wireModalBackdrop('surahInfoModal');
+    document.getElementById('surahInfoModalClose').onclick = () => closeModal('surahInfoModal');
+  }
+  document.getElementById('sitModalHead').innerHTML =
+    `<span class="sit-modal-ar">${header.arName}</span><span class="sit-modal-bn">${header.bnName}</span>`;
+  document.getElementById('sitModalText').innerHTML = highlightSurahInfoText(surahInfo);
+  openModal('surahInfoModal');
 }
 
 // ---------- Marks ayahs as "read" for the লাইফটাইম stats once they've
