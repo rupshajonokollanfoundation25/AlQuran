@@ -545,6 +545,12 @@ function renderStatsView(){
     ${renderLifetimeActivity(activity, streak)}
 
     ${renderTimeManagement({ todayMin, streak, milestone, weekMinutes, maxWeekMin, weekTotalMin, dow, activity })}
+
+    ${typeof renderTrendsSection === 'function' ? renderTrendsSection() : ''}
+
+    ${typeof renderAudioStatsSection === 'function' ? renderAudioStatsSection() : ''}
+
+    ${typeof renderSocialShareSection === 'function' ? renderSocialShareSection() : ''}
   `;
 
   document.getElementById('statsSeeAllBadges').onclick = openAllBadgesModal;
@@ -552,9 +558,12 @@ function renderStatsView(){
   if(authBtn) authBtn.onclick = () => openAuthFlow('choice');
   const logoutBtn = document.getElementById('statsLogoutBtn');
   if(logoutBtn) logoutBtn.onclick = () => confirmLogout();
+  const shareBtn = document.getElementById('statsOpenShareCard');
+  if(shareBtn) shareBtn.onclick = () => openShareCardModal();
   loadStatsAod(false);
 }
 
 function initStats(){
   initReadingTimer();
+  if(typeof initAudioStats === 'function') initAudioStats();
 }
