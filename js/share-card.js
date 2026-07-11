@@ -88,13 +88,13 @@ async function drawReportCard(canvas){
   // Header
   ctx.fillStyle = gold;
   ctx.font = '600 30px "Hind Siliguri"';
-  ctx.fillText('কুরআন বাংলা', cx, 150);
+  ctx.fillText('Al Quran', cx, 150);
 
   const stats = collectShareCardStats();
 
   ctx.fillStyle = parchment;
   ctx.font = '700 52px "Noto Serif Bengali"';
-  ctx.fillText(`${stats.monthName} মাসের রিপোর্ট`, cx, 225);
+  ctx.fillText(`${stats.monthName} Monthly report`, cx, 225);
 
   ctx.strokeStyle = goldSoft;
   ctx.lineWidth = 2;
@@ -141,10 +141,10 @@ async function drawReportCard(canvas){
   // Footer
   ctx.fillStyle = goldSoft;
   ctx.font = '400 26px "Hind Siliguri"';
-  ctx.fillText('আলহামদুলিল্লাহ — চালিয়ে যান 🌙', cx, SHARE_CARD_H-95);
+  ctx.fillText('producer - rupsha jonokollan foundation', cx, SHARE_CARD_H-95);
   ctx.font = '400 22px "Hind Siliguri"';
   ctx.fillStyle = 'rgba(251,246,236,0.55)';
-  ctx.fillText('AlQuran • কুরআন বাংলা অ্যাপ', cx, SHARE_CARD_H-58);
+  ctx.fillText('Al Quran • all rights reserved. ', cx, SHARE_CARD_H-58);
 }
 
 async function shareOrDownloadCanvas(canvas){
@@ -154,7 +154,7 @@ async function shareOrDownloadCanvas(canvas){
     const file = new File([blob], filename, { type: 'image/png' });
     if(navigator.canShare && navigator.canShare({ files: [file] })){
       try{
-        await navigator.share({ files: [file], title: 'আমার কুরআন পাঠের রিপোর্ট' });
+        await navigator.share({ files: [file], title: 'Quran recitation report' });
         return;
       }catch(e){ /* user cancelled or share failed — fall through to download */ }
     }
@@ -164,7 +164,7 @@ async function shareOrDownloadCanvas(canvas){
     document.body.appendChild(a);
     a.click();
     a.remove();
-    showToast('ছবি ডাউনলোড হয়েছে');
+    showToast('Image downloaded.');
   }, 'image/png');
 }
 
@@ -178,14 +178,14 @@ function openShareCardModal(){
   wrap.innerHTML = `
     <div class="app-modal-box share-card-box">
       <div class="app-modal-head">
-        <h3><i class="fa-solid fa-share-nodes"></i> মাসিক রিপোর্ট কার্ড</h3>
+        <h3><i class="fa-solid fa-share-nodes"></i> Monthly report card</h3>
         <button class="app-modal-close" id="shareCardClose">✕</button>
       </div>
       <div class="app-modal-body share-card-body">
         <div class="share-card-canvas-wrap"><canvas id="shareCardCanvas"></canvas></div>
         <div class="share-card-actions">
-          <button class="auth-cta-btn" id="shareCardShareBtn"><i class="fa-solid fa-share-nodes"></i> শেয়ার করুন</button>
-          <button class="settings-btn share-card-download-btn" id="shareCardDownloadBtn"><i class="fa-solid fa-download"></i> ডাউনলোড</button>
+          <button class="auth-cta-btn" id="shareCardShareBtn"><i class="fa-solid fa-share-nodes"></i> Share</button>
+          <button class="settings-btn share-card-download-btn" id="shareCardDownloadBtn"><i class="fa-solid fa-download"></i> Download</button>
         </div>
       </div>
     </div>`;
@@ -204,12 +204,12 @@ function openShareCardModal(){
 // ---------- UI: "সামাজিক / অনুপ্রেরণামূলক" card on the stats page ----------
 function renderSocialShareSection(){
   return `
-    <div class="section-title-sm">শেয়ার করুন</div>
+    <div class="section-title-sm">Share</div>
     <div class="stats-card share-cta-card">
       <div class="share-cta-ic"><i class="fa-solid fa-award"></i></div>
       <div class="share-cta-mid">
         <div class="share-cta-title">আপনার মাসিক অগ্রগতি শেয়ার করুন</div>
-        <div class="share-cta-sub">একটি সুন্দর কার্ড তৈরি হবে — বন্ধুদের সাথে শেয়ার করে অনুপ্রাণিত করুন</div>
+        <div class="share-cta-sub">আপনার প্রগ্রেস বন্ধুদের মধ্যে শেয়ার করুন — আপনার একটি শেয়ার হতে পারে একটি মানুষের জীবন বদলে দেওয়া কারণ।</div>
       </div>
       <button class="share-cta-btn" id="statsOpenShareCard"><i class="fa-solid fa-chevron-left"></i></button>
     </div>`;
