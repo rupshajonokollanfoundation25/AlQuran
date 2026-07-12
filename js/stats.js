@@ -5,7 +5,7 @@
 const STATS_LS_KEY = 'qr_activity';
 const DAILY_GOAL_MIN = 1; // matches the "0 min / 1 min" style daily goal
 const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100, 365];
-const WEEKDAY_LABELS_BN = ['S','M','Tu','W','Th','F','S'];
+const WEEKDAY_LABELS_EN = ['SUN','MON','TUE','WED','THU','FRi','SAT'];
 
 function loadActivity(){
   try{
@@ -58,12 +58,12 @@ function computeStreak(activity){
 function totalTimeSpentSeconds(activity){
   return Object.values(activity || {}).reduce((sum, s) => sum + (s || 0), 0);
 }
-function formatDurationBn(totalSeconds){
+function formatDurationEn(totalSeconds){
   const totalMin = Math.floor(totalSeconds / 60);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  if(h <= 0) return `${toBn(m)} মিনিট`;
-  return `${toBn(h)} ঘন্টা ${toBn(m)} মিনিট`;
+  if(h <= 0) return `${toEn(m)} Minute`;
+  return `${toEn(h)} Hours ${toEn(m)} Minute`;
 }
 
 function nextMilestone(streak){
@@ -117,7 +117,7 @@ function makeCountBadge(id, label, icon, goal, progressFn, category, unit){
   return {
     id, label, icon, category, goal,
     progress: () => Math.min(progressFn(), goal),
-    caption: () => `${toBn(Math.min(progressFn(), goal))}/${toBn(goal)}${unit ? ' ' + unit : ''}`
+    caption: () => `${toEn(Math.min(progressFn(), goal))}/${toEn(goal)}${unit ? ' ' + unit : ''}`
   };
 }
 function makeFlagBadge(id, label, icon, category, flagFn, doneCaption, todoCaption){
@@ -225,7 +225,7 @@ function badgeCardHtml(b){
 
 // Main stats page shows a compact showcase: unlocked badges first (most
 // recently completed feel), then the closest-to-unlock ones, capped at 6 —
-// full breakdown lives behind "সবগুলো দেখুন".
+// full breakdown lives behind "See more".
 function renderBadgesShowcase(){
   const sorted = BADGES.slice().sort((a,b) => {
     const au = a.progress() >= a.goal, bu = b.progress() >= b.goal;
@@ -241,7 +241,7 @@ function renderBadgesSummaryBar(){
   const pct = Math.round((unlocked/total)*100);
   return `
     <div class="badges-summary">
-      <div class="badges-summary-text"><b>${toBn(unlocked)}</b> / ${toBn(total)} ব্যাজ অর্জিত</div>
+      <div class="badges-summary-text"><b>${toEn(unlocked)}</b> / ${toBn(total)} ব্যাজ অর্জিত</div>
       <div class="badges-summary-bar"><div class="badges-summary-fill" style="width:${pct}%"></div></div>
     </div>`;
 }
@@ -265,7 +265,7 @@ function openAllBadgesModal(){
   wrap.innerHTML = `
     <div class="app-modal-box">
       <div class="app-modal-head">
-        <h3><i class="fa-solid fa-award"></i> সকল ব্যাজ</h3>
+        <h3><i class="fa-solid fa-award"></i> All badges</h3>
         <button class="app-modal-close" id="allBadgesClose">✕</button>
       </div>
       <div class="app-modal-body">
@@ -296,7 +296,7 @@ function renderAccountArea(){
   }
   return `
     <div class="stats-card auth-prompt-card">
-      <div class="auth-prompt-text">আপনার ব্যাজগুলো হারাবেন না! লগ ইন করুন যাতে আপনার অগ্রগতি এবং ব্যাজগুলি সংরক্ষিত থাকে।</div>
+      <div class="auth-prompt-text">আপনার ব্যাজগুলো হারাতে না চাইলে এক্ষনি সাইন আপ করুন! অথবা একাউন্ট থাকবে প্রগ্রেস গুলা সব সময় আপডেট করার জন্য লগ ইন করুন যাতে আপনার অগ্রগতি এবং ব্যাজগুলি স্বয়ংক্রিয়ভাবে আপডেট এবং সংরক্ষিত থাকে।</div>
       <button class="auth-cta-btn" id="statsAuthBtn">সাইন আপ / লগ ইন</button>
     </div>`;
 }
@@ -308,7 +308,7 @@ function renderLifetimeActivity(activity, streak){
   const timeSpent = loggedIn ? formatDurationBn(totalTimeSpentSeconds(activity)) : '--';
   const best = loggedIn ? toBn(Math.max(state.bestStreak || 0, streak)) : '--';
   return `
-    <div class="section-title-sm">লাইফটাইম অ্যাকটিভিটি</div>
+    <div class="section-title-sm">Lifetime Activity</div>
     <div class="lifetime-grid">
       <div class="lifetime-box">
         <i class="fa-solid fa-bolt"></i>
@@ -326,7 +326,7 @@ function renderLifetimeActivity(activity, streak){
         <div class="lifetime-label">সেরা স্ট্রিক</div>
       </div>
     </div>
-    ${loggedIn ? '' : '<div class="lifetime-login-hint">আপনার পরিসংখ্যান ট্র্যাক করতে লগ ইন করুন।</div>'}`;
+    ${loggedIn ? '' : '<div class="lifetime-login-hint">আপনার পরিসংখ্যান ট্র্যাক করতে লগইন করুন।</div>'}`;
 }
 
 // ---------- Mini "আজকের আয়াত" card for the stats page, with share/copy/refresh ----------
@@ -346,7 +346,7 @@ function renderStatsAodCard(){
   const box = document.getElementById('statsAodBox');
   if(!box) return;
   if(!statsAodState){
-    box.innerHTML = `<div class="aod-loading">লোড হচ্ছে...</div>`;
+    box.innerHTML = `<div class="aod-loading">loading...</div>`;
     return;
   }
   const surahName = surahNamesBn[statsAodState.s-1] || ('সূরা ' + statsAodState.s);
@@ -382,7 +382,7 @@ async function loadStatsAod(forceRandom){
     statsAodState = await fetchAyahPair(s, a);
   }catch(e){
     const box = document.getElementById('statsAodBox');
-    if(box) box.innerHTML = `<div class="aod-loading">লোড করা যায়নি, ইন্টারনেট সংযোগ পরীক্ষা করুন।</div>`;
+    if(box) box.innerHTML = `<div class="aod-loading">Could not load, check internet connection.</div>`;
     return;
   }
   renderStatsAodCard();
@@ -431,7 +431,7 @@ function renderTimeManagement(ctx){
   const avgPerActiveDay = activeDaysInHeatmap ? Math.round((weeks.flat().reduce((s,d)=>s+(d.future?0:d.min),0)) / activeDaysInHeatmap) : 0;
 
   return `
-    <div class="section-title-sm">সময় ব্যবস্থাপনা</div>
+    <div class="section-title-sm">Time spent with us</div>
     <div class="stats-card time-goal-card">
       <div class="time-goal-ring-wrap">
         <svg viewBox="0 0 70 70" width="86" height="86" class="time-goal-ring${todayMin>0?' active':''}">
@@ -441,17 +441,17 @@ function renderTimeManagement(ctx){
         <div class="time-goal-ring-center"><i class="fa-solid fa-bolt"></i></div>
       </div>
       <div class="time-goal-text">
-        <div class="stats-label">আজকে পড়ুন</div>
-        <div class="stats-big">${toBn(todayMin)} min <span class="stats-goal">/ ${toBn(DAILY_GOAL_MIN)} min</span></div>
-        <div class="stats-label" style="margin-top:12px;">বর্তমান স্ট্রিক</div>
-        <div class="stats-big">${toBn(streak)} দিন</div>
+        <div class="stats-label">Read today</div>
+        <div class="stats-big">${toBn(todayMin)} min <span class="stats-goal">/ ${toEn(DAILY_GOAL_MIN)} min</span></div>
+        <div class="stats-label" style="margin-top:12px;">Current streak</div>
+        <div class="stats-big">${toEn(streak)} days</div>
       </div>
     </div>
 
     <div class="stats-card">
       <div class="stats-top-row" style="margin-bottom:2px;">
-        <div class="stats-label">এই সপ্তাহ</div>
-        <div class="stats-label">${toBn(weekTotalMin)} মিনিট মোট</div>
+        <div class="stats-label">This week</div>
+        <div class="stats-label">Total ${toEn(weekTotalMin)} Minutes </div>
       </div>
       <div class="week-chart">
         ${weekMinutes.map((m,i) => `
@@ -465,14 +465,14 @@ function renderTimeManagement(ctx){
 
     <div class="stats-card">
       <div class="streak-range-row">
-        <div><div class="stats-big-sm">${toBn(streak)}d</div><div class="stats-label">বর্তমান স্ট্রিক</div></div>
-        <div style="text-align:right;"><div class="stats-big-sm">${toBn(milestone)}d</div><div class="stats-label">পরবর্তী লক্ষ্য</div></div>
+        <div><div class="stats-big-sm">${toEn(streak)}d</div><div class="stats-label">Current streak</div></div>
+        <div style="text-align:right;"><div class="stats-big-sm">${toEn(milestone)}d</div><div class="stats-label">Next target</div></div>
       </div>
       <div class="planner-progress-bar" style="margin-top:8px;"><div class="planner-progress-fill" style="width:${streakPct}%"></div></div>
     </div>
 
     <div class="stats-card heatmap-card">
-      <div class="stats-label" style="margin-bottom:10px;">গত ১০ সপ্তাহের কার্যকলাপ</div>
+      <div class="stats-label" style="margin-bottom:10px;">Activity in the last 10 weeks</div>
       <div class="heatmap-grid">
         ${weeks.map(week => `<div class="heatmap-col">${week.map(d => {
           if(d.future) return `<div class="heatmap-cell heatmap-future"></div>`;
@@ -480,22 +480,22 @@ function renderTimeManagement(ctx){
           return `<div class="heatmap-cell heatmap-lv${lvl}" title="${d.key}: ${d.min}m"></div>`;
         }).join('')}</div>`).join('')}
       </div>
-      <div class="heatmap-legend"><span>কম</span><span class="heatmap-cell heatmap-lv0"></span><span class="heatmap-cell heatmap-lv1"></span><span class="heatmap-cell heatmap-lv2"></span><span class="heatmap-cell heatmap-lv3"></span><span class="heatmap-cell heatmap-lv4"></span><span>বেশি</span></div>
+      <div class="heatmap-legend"><span>Low</span><span class="heatmap-cell heatmap-lv0"></span><span class="heatmap-cell heatmap-lv1"></span><span class="heatmap-cell heatmap-lv2"></span><span class="heatmap-cell heatmap-lv3"></span><span class="heatmap-cell heatmap-lv4"></span><span>highest</span></div>
       <div class="lifetime-grid" style="margin-top:14px;">
         <div class="lifetime-box">
           <i class="fa-solid fa-calendar-days"></i>
-          <div class="lifetime-val">${toBn(monthTotalMin)}m</div>
-          <div class="lifetime-label">এই মাসে</div>
+          <div class="lifetime-val">${toEn(monthTotalMin)}m</div>
+          <div class="lifetime-label">This month</div>
         </div>
         <div class="lifetime-box">
           <i class="fa-solid fa-chart-line"></i>
-          <div class="lifetime-val">${toBn(avgPerActiveDay)}m</div>
-          <div class="lifetime-label">দৈনিক গড়</div>
+          <div class="lifetime-val">${toEn(avgPerActiveDay)}m</div>
+          <div class="lifetime-label">Daily average</div>
         </div>
         <div class="lifetime-box">
           <i class="fa-solid fa-fire"></i>
-          <div class="lifetime-val">${toBn(activeDaysInHeatmap)}</div>
-          <div class="lifetime-label">সক্রিয় দিন</div>
+          <div class="lifetime-val">${toEn(activeDaysInHeatmap)}</div>
+          <div class="lifetime-label">Active day</div>
         </div>
       </div>
     </div>
@@ -529,17 +529,17 @@ function renderStatsView(){
     ${renderAccountArea()}
 
     <div class="badges-head">
-      <span>ব্যাজ</span>
-      <a href="javascript:void(0)" id="statsSeeAllBadges">সবগুলো দেখুন</a>
+      <span>Badge</span>
+      <a href="javascript:void(0)" id="statsSeeAllBadges">See all</a>
     </div>
     ${renderBadgesSummaryBar()}
     <div class="badges-grid">
       ${renderBadgesShowcase()}
     </div>
 
-    <div class="section-title-sm">আজকের আয়াত</div>
+    <div class="section-title-sm">Today's verse</div>
     <div class="stats-card stats-aod-card" id="statsAodBox">
-      <div class="aod-loading">লোড হচ্ছে...</div>
+      <div class="aod-loading">loading...</div>
     </div>
 
     ${renderLifetimeActivity(activity, streak)}
