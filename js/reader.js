@@ -400,8 +400,18 @@ function renderReader({header, showBismillah, surahInfo, surahBenefits, ayahs}){
     surahInfoTrigger.onclick = () => openSurahInfoModal(header, surahInfo, surahBenefits);
   }
   document.getElementById('playAllBtn').onclick = () => {
-    if(state.isPlaying && (state.fullSurahMode || state.playIndex === 0)){ pausePlayback(); }
-    else { startReaderPlayback(0, singleSurah); }
+    // এই বাটনের লেবেলই "সম্পূর্ণ সূরা শুনুন" — তাই মোড যাই হোক না কেন,
+    // এটা সবসময় গোটা সূরার একটাই ফাইল (audio-surah CDN) দিয়ে গ্যাপলেস
+    // চালাবে, প্রতি-আয়াত ফাইল চেইন করে ঘন ঘন সিকবার লাফানো/থামা এড়াতে।
+    // শুধু juz/page-এর মতো একাধিক সূরা মেশানো ভিউতে (singleSurah না থাকলে)
+    // পুরোনো আয়াত-চেইন পদ্ধতিতেই চলবে, কারণ ওখানে এক-ফাইল সূরা-অডিও প্রযোজ্য নয়।
+    if(singleSurah){
+      if(state.isPlaying && state.fullSurahMode && state.fullSurahNumber === singleSurah){ pausePlayback(); }
+      else { playFullSurah(singleSurah, true); }
+    } else {
+      if(state.isPlaying && state.playIndex === 0){ pausePlayback(); }
+      else { playAtIndex(0, true); }
+    }
   };
   const offlineBtn = document.getElementById('offlineBtn');
   if(offlineBtn) offlineBtn.onclick = () => downloadCurrentAudioForOffline(offlineBtn);
