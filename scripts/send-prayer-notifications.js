@@ -54,6 +54,11 @@ async function run() {
         const raw = (json.data.timings[p] || '').split(' ')[0]; // "HH:MM"
         if (!raw) continue;
         const diff = minutesSince(raw, now);
+        
+
+console.log(`  ${p}: raw=${raw} now=${now} diff=${diff}`);
+        
+        
         if (diff >= 0 && diff <= WINDOW_MIN && !sentToday.includes(p)) {
           try {
             await admin.messaging().send({
