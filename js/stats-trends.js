@@ -169,7 +169,7 @@ function renderTrendsSection(){
   const activity = loadActivity();
   const ayahDaily = loadAyahDaily();
   return `
-    <div class="section-title-sm">তুলনামূলক</div>
+    <div class="section-title-sm">Comparative</div>
     ${renderTrendCompareCard(activity)}
     ${renderTrendMiniChart(activity)}
     ${renderMonthlySummaryCard(activity, ayahDaily)}
