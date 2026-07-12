@@ -5,8 +5,7 @@
 const STATS_LS_KEY = 'qr_activity';
 const DAILY_GOAL_MIN = 1; // matches the "0 min / 1 min" style daily goal
 const STREAK_MILESTONES = [3, 7, 14, 30, 60, 100, 365];
-const WEEKDAY_LABELS_EN = ['SUN','MON','TUE','WED','THU','FRi','SAT'];
-const WEEKDAY_LABELS_BN = ['রবি','সোম','মঙ্গল','বুধ','বৃহঃ','শুক্র','শনি'];
+const WEEKDAY_LABELS_BN = ['SU','MO','TU','WD','TH','FR','ST'];
 
 function loadActivity(){
   try{
@@ -59,14 +58,13 @@ function computeStreak(activity){
 function totalTimeSpentSeconds(activity){
   return Object.values(activity || {}).reduce((sum, s) => sum + (s || 0), 0);
 }
-function formatDurationEn(totalSeconds){
+function formatDurationBn(totalSeconds){
   const totalMin = Math.floor(totalSeconds / 60);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  if(h <= 0) return `${toEn(m)} Minute`;
-  return `${toEn(h)} Hours ${toEn(m)} Minute`;
+  if(h <= 0) return `${toBn(m)} মিনিট`;
+  return `${toBn(h)} ঘন্টা ${toBn(m)} মিনিট`;
 }
-
 
 function nextMilestone(streak){
   return STREAK_MILESTONES.find(m => m > streak) || (streak + 30);
@@ -119,7 +117,7 @@ function makeCountBadge(id, label, icon, goal, progressFn, category, unit){
   return {
     id, label, icon, category, goal,
     progress: () => Math.min(progressFn(), goal),
-    caption: () => `${toEn(Math.min(progressFn(), goal))}/${toEn(goal)}${unit ? ' ' + unit : ''}`
+    caption: () => `${toBn(Math.min(progressFn(), goal))}/${toBn(goal)}${unit ? ' ' + unit : ''}`
   };
 }
 function makeFlagBadge(id, label, icon, category, flagFn, doneCaption, todoCaption){
@@ -227,7 +225,7 @@ function badgeCardHtml(b){
 
 // Main stats page shows a compact showcase: unlocked badges first (most
 // recently completed feel), then the closest-to-unlock ones, capped at 6 —
-// full breakdown lives behind "See more".
+// full breakdown lives behind "সবগুলো দেখুন".
 function renderBadgesShowcase(){
   const sorted = BADGES.slice().sort((a,b) => {
     const au = a.progress() >= a.goal, bu = b.progress() >= b.goal;
@@ -243,7 +241,7 @@ function renderBadgesSummaryBar(){
   const pct = Math.round((unlocked/total)*100);
   return `
     <div class="badges-summary">
-      <div class="badges-summary-text"><b>${toEn(unlocked)}</b> / ${toEn(total)} ব্যাজ অর্জিত</div>
+      <div class="badges-summary-text"><b>${toBn(unlocked)}</b> / ${toBn(total)} ব্যাজ অর্জিত</div>
       <div class="badges-summary-bar"><div class="badges-summary-fill" style="width:${pct}%"></div></div>
     </div>`;
 }
@@ -306,9 +304,9 @@ function renderAccountArea(){
 // ---------- Lifetime activity row ----------
 function renderLifetimeActivity(activity, streak){
   const loggedIn = !!state.user;
-  const ayahCount = loggedIn ? toEn(ayahsReadCount()) : '--';
-  const timeSpent = loggedIn ? formatDurationEn(totalTimeSpentSeconds(activity)) : '--';
-  const best = loggedIn ? toEn(Math.max(state.bestStreak || 0, streak)) : '--';
+  const ayahCount = loggedIn ? toBn(ayahsReadCount()) : '--';
+  const timeSpent = loggedIn ? formatDurationBn(totalTimeSpentSeconds(activity)) : '--';
+  const best = loggedIn ? toBn(Math.max(state.bestStreak || 0, streak)) : '--';
   return `
     <div class="section-title-sm">Lifetime Activity</div>
     <div class="lifetime-grid">
@@ -328,7 +326,7 @@ function renderLifetimeActivity(activity, streak){
         <div class="lifetime-label">সেরা স্ট্রিক</div>
       </div>
     </div>
-    ${loggedIn ? '' : '<div class="lifetime-login-hint">আপনার পরিসংখ্যান ট্র্যাক করতে লগইন করুন।</div>'}`;
+    ${loggedIn ? '' : '<div class="lifetime-login-hint">আপনার পরিসংখ্যান ট্র্যাক করতে লগ ইন করুন।</div>'}`;
 }
 
 // ---------- Mini "আজকের আয়াত" card for the stats page, with share/copy/refresh ----------
@@ -355,16 +353,16 @@ function renderStatsAodCard(){
   box.innerHTML = `
     <div class="aod-arabic" style="font-size:18px;">${statsAodState.arabic || ''}</div>
     <div class="aod-bengali" style="color:var(--ink-soft);">${statsAodState.bengali || ''}</div>
-    <div class="aod-ref">সূরা ${surahName} — আয়াত ${toEn(statsAodState.a)}</div>
+    <div class="aod-ref">সূরা ${surahName} — আয়াত ${toBn(statsAodState.a)}</div>
     <div class="stats-aod-actions">
       <button id="statsAodShare" title="শেয়ার করুন"><i class="fa-solid fa-share"></i></button>
       <button id="statsAodCopy" title="কপি করুন"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
       <button id="statsAodRefresh" title="নতুন আয়াত"><i class="fa-solid fa-rotate-right"></i></button>
     </div>`;
-  const shareText = () => `${statsAodState.arabic}\n\n${statsAodState.bengali}\n— সূরা ${surahName}, আয়াত ${toEn(statsAodState.a)}`;
+  const shareText = () => `${statsAodState.arabic}\n\n${statsAodState.bengali}\n— সূরা ${surahName}, আয়াত ${toBn(statsAodState.a)}`;
   document.getElementById('statsAodShare').onclick = async () => {
     if(navigator.share){ try{ await navigator.share({ text: shareText() }); incrementShareCount(); }catch(e){} }
-    else { try{ await navigator.clipboard.writeText(shareText()); showToast('কপি করা হয়েছে'); incrementShareCount(); }catch(e){} }
+    else { try{ await navigator.clipboard.writeText(shareText()); showToast('Copied'); incrementShareCount(); }catch(e){} }
   };
   document.getElementById('statsAodCopy').onclick = () => openSurahAndScrollTo(statsAodState.s, statsAodState.a);
   document.getElementById('statsAodRefresh').onclick = () => loadStatsAod(true);
@@ -443,38 +441,38 @@ function renderTimeManagement(ctx){
         <div class="time-goal-ring-center"><i class="fa-solid fa-bolt"></i></div>
       </div>
       <div class="time-goal-text">
-        <div class="stats-label">Read today</div>
-        <div class="stats-big">${toEn(todayMin)} min <span class="stats-goal">/ ${toEn(DAILY_GOAL_MIN)} min</span></div>
-        <div class="stats-label" style="margin-top:12px;">Current streak</div>
-        <div class="stats-big">${toEn(streak)} days</div>
+        <div class="stats-label">আজকে পড়ুন</div>
+        <div class="stats-big">${toBn(todayMin)} min <span class="stats-goal">/ ${toBn(DAILY_GOAL_MIN)} min</span></div>
+        <div class="stats-label" style="margin-top:12px;">বর্তমান স্ট্রিক</div>
+        <div class="stats-big">${toBn(streak)} দিন</div>
       </div>
     </div>
 
     <div class="stats-card">
       <div class="stats-top-row" style="margin-bottom:2px;">
-        <div class="stats-label">This week</div>
-        <div class="stats-label">Total ${toEn(weekTotalMin)} Minutes </div>
+        <div class="stats-label">এই সপ্তাহ</div>
+        <div class="stats-label">মোট ${toBn(weekTotalMin)} মিনিট </div>
       </div>
       <div class="week-chart">
         ${weekMinutes.map((m,i) => `
           <div class="week-col">
             <div class="week-bar-track"><div class="week-bar-fill" style="height:${Math.round((m/maxWeekMin)*70)}px"></div></div>
             <div class="week-day${i===dow?' today':''}">${WEEKDAY_LABELS_BN[i]}</div>
-            <div class="week-min">${toEn(m)}m</div>
+            <div class="week-min">${toBn(m)}m</div>
           </div>`).join('')}
       </div>
     </div>
 
     <div class="stats-card">
       <div class="streak-range-row">
-        <div><div class="stats-big-sm">${toEn(streak)}d</div><div class="stats-label">Current streak</div></div>
-        <div style="text-align:right;"><div class="stats-big-sm">${toEn(milestone)}d</div><div class="stats-label">Next target</div></div>
+        <div><div class="stats-big-sm">${toBn(streak)}d</div><div class="stats-label">বর্তমান স্ট্রিক</div></div>
+        <div style="text-align:right;"><div class="stats-big-sm">${toBn(milestone)}d</div><div class="stats-label">পরবর্তী লক্ষ্য</div></div>
       </div>
       <div class="planner-progress-bar" style="margin-top:8px;"><div class="planner-progress-fill" style="width:${streakPct}%"></div></div>
     </div>
 
     <div class="stats-card heatmap-card">
-      <div class="stats-label" style="margin-bottom:10px;">Activity in the last 10 weeks</div>
+      <div class="stats-label" style="margin-bottom:10px;">গত ১০ সপ্তাহের কার্যকলাপ</div>
       <div class="heatmap-grid">
         ${weeks.map(week => `<div class="heatmap-col">${week.map(d => {
           if(d.future) return `<div class="heatmap-cell heatmap-future"></div>`;
@@ -482,22 +480,22 @@ function renderTimeManagement(ctx){
           return `<div class="heatmap-cell heatmap-lv${lvl}" title="${d.key}: ${d.min}m"></div>`;
         }).join('')}</div>`).join('')}
       </div>
-      <div class="heatmap-legend"><span>Low</span><span class="heatmap-cell heatmap-lv0"></span><span class="heatmap-cell heatmap-lv1"></span><span class="heatmap-cell heatmap-lv2"></span><span class="heatmap-cell heatmap-lv3"></span><span class="heatmap-cell heatmap-lv4"></span><span>highest</span></div>
+      <div class="heatmap-legend"><span>কম</span><span class="heatmap-cell heatmap-lv0"></span><span class="heatmap-cell heatmap-lv1"></span><span class="heatmap-cell heatmap-lv2"></span><span class="heatmap-cell heatmap-lv3"></span><span class="heatmap-cell heatmap-lv4"></span><span>বেশি</span></div>
       <div class="lifetime-grid" style="margin-top:14px;">
         <div class="lifetime-box">
           <i class="fa-solid fa-calendar-days"></i>
-          <div class="lifetime-val">${toEn(monthTotalMin)}m</div>
-          <div class="lifetime-label">This month</div>
+          <div class="lifetime-val">${toBn(monthTotalMin)}m</div>
+          <div class="lifetime-label">এই মাসে</div>
         </div>
         <div class="lifetime-box">
           <i class="fa-solid fa-chart-line"></i>
-          <div class="lifetime-val">${toEn(avgPerActiveDay)}m</div>
-          <div class="lifetime-label">Daily average</div>
+          <div class="lifetime-val">${toBn(avgPerActiveDay)}m</div>
+          <div class="lifetime-label">দৈনিক গড়</div>
         </div>
         <div class="lifetime-box">
           <i class="fa-solid fa-fire"></i>
-          <div class="lifetime-val">${toEn(activeDaysInHeatmap)}</div>
-          <div class="lifetime-label">Active day</div>
+          <div class="lifetime-val">${toBn(activeDaysInHeatmap)}</div>
+          <div class="lifetime-label">সক্রিয় দিন</div>
         </div>
       </div>
     </div>
