@@ -181,6 +181,7 @@ function initHeaderOffset(){
   initInstallPrompt();
   initServiceWorker();
   if(typeof initForegroundPush === 'function') initForegroundPush();
+  if(typeof initDonationBanner === 'function') initDonationBanner();
   initSearch();
   initPlayer();
   fetchSurahList();
