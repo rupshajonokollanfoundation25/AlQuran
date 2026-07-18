@@ -23,29 +23,55 @@
 }
 .app-modal-search input{border:none;background:none;outline:none;font-family:'Hind Siliguri',sans-serif;font-size:13.5px;color:var(--ink);flex:1;}
 
-/* ---- Settings rows ---- */
+/* ---- Settings: grouped sections (Settings modal — js/menu.js initSettingsModal) ----
+   Rows are grouped into labelled sections, each rendered as a soft "card" so the
+   modal reads as organized categories instead of one long flat list. ---- */
+.settings-body{padding-top:6px;}
+.settings-section{margin-bottom:18px;}
+.settings-section:last-child{margin-bottom:2px;}
+.settings-section-title{
+  display:flex;align-items:center;gap:8px;font-family:'Hind Siliguri',sans-serif;font-weight:700;
+  font-size:12.5px;letter-spacing:.02em;color:var(--ink-soft);text-transform:uppercase;
+  padding:0 4px 8px;
+}
+.settings-section-title i{color:var(--gold);font-size:12px;width:14px;text-align:center;}
+.settings-section-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.03);
+}
+
 .settings-row{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 2px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;
   border-bottom:1px solid var(--line);
 }
 .settings-row:last-child{border-bottom:none;}
-.settings-label{font-size:14px;color:var(--ink);}
-.settings-control{display:flex;align-items:center;gap:8px;}
+.settings-row-lead{display:flex;align-items:center;gap:11px;min-width:0;}
+.settings-row-ic{
+  flex-shrink:0;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:var(--sage);color:var(--teal-deep);font-size:12.5px;
+}
+.settings-label{font-size:14px;color:var(--ink);min-width:0;}
+.settings-control{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 .settings-control select{
-  background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:8px;
+  background:var(--parchment);border:1px solid var(--line);color:var(--ink);border-radius:8px;
   padding:7px 10px;font-family:'Hind Siliguri',sans-serif;font-size:13px;max-width:160px;
 }
 .settings-btn{
-  display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);
-  color:var(--ink);border-radius:8px;padding:7px 12px;font-family:'Hind Siliguri',sans-serif;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;background:var(--parchment);border:1px solid var(--line);
+  color:var(--ink);border-radius:999px;padding:7px 12px;font-family:'Hind Siliguri',sans-serif;font-size:13px;
+  cursor:pointer;transition:border-color .15s ease,background .15s ease;
 }
+.settings-btn:hover, .settings-btn:active{border-color:var(--gold);background:var(--sage);}
+.settings-chevron{font-size:10px;color:var(--ink-soft);}
+.settings-stepper{background:var(--parchment);border:1px solid var(--line);border-radius:999px;padding:2px;gap:2px;}
+.settings-stepper .icon-btn{border-radius:999px;}
 .lang-toggle{display:flex;background:var(--sage);border-radius:999px;padding:3px;}
 .lang-toggle button{
   border:none;background:none;padding:6px 14px;border-radius:999px;font-family:'Hind Siliguri',sans-serif;
   font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
 }
 .lang-toggle button.active{background:var(--teal);color:var(--sage);}
-.settings-btn span{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.settings-btn span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 /* ---- Language / translation picker modal (js/menu.js openLangPickerModal) ---- */
 .lang-picker-list{display:flex;flex-direction:column;gap:4px;}
