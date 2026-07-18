@@ -130,16 +130,27 @@ const TB_PATTERNS = {
 };
 
 // ==== PREMIUM EXTENSION v2: hand-placed floating decorations ====
-// Six icon types. Each placed instance is {id, type, top, left} where top/left
-// are percentages (0-100) positioned by the user by dragging on a live mini
-// preview inside the builder — not a fixed hard-coded spot list any more.
+// Twelve icon types, all rendered as real Font Awesome glyphs (<i class="...">)
+// instead of emoji characters, so they scale/color/animate consistently with
+// the rest of the app's iconography. Each placed instance is
+// {id, type, top, left} where top/left are percentages (0-100) positioned by
+// the user by dragging on a live mini preview inside the builder — not a
+// fixed hard-coded spot list.
 const TB_DECOR_TYPES = {
-  lantern: { emoji:'🏮', name:'লন্ঠন',   size:22, opacity:.5,  anim:'tbLanternSwing 3.2s ease-in-out infinite' },
-  star:    { emoji:'✨', name:'তারা',    size:15, opacity:.42, anim:'tbStarTwinkle 2.5s ease-in-out infinite' },
-  moon:    { emoji:'🌙', name:'চাঁদ',    size:20, opacity:.45, anim:'tbMoonFloat 4s ease-in-out infinite' },
-  flower:  { emoji:'🌸', name:'ফুল',     size:18, opacity:.4,  anim:'tbFlowerDrift 5s ease-in-out infinite' },
-  sparkle: { emoji:'💫', name:'স্পার্কল', size:16, opacity:.5,  anim:'tbStarTwinkle 2.1s ease-in-out infinite' },
-  feather: { emoji:'🪶', name:'পালক',    size:18, opacity:.4,  anim:'tbFeatherSway 4.5s ease-in-out infinite' }
+  // -- original six, now coded as FA icons instead of emoji --
+  lantern: { icon:'fa-solid fa-lightbulb',           name:'লন্ঠন',     size:22, opacity:.5,  anim:'tbLanternSwing 3.2s ease-in-out infinite', group:'basic' },
+  star:    { icon:'fa-solid fa-star',                name:'তারা',      size:15, opacity:.42, anim:'tbStarTwinkle 2.5s ease-in-out infinite',  group:'basic' },
+  moon:    { icon:'fa-solid fa-moon',                name:'চাঁদ',      size:20, opacity:.45, anim:'tbMoonFloat 4s ease-in-out infinite',      group:'basic' },
+  flower:  { icon:'fa-solid fa-spa',                 name:'ফুল',       size:18, opacity:.4,  anim:'tbFlowerDrift 5s ease-in-out infinite',    group:'basic' },
+  sparkle: { icon:'fa-solid fa-wand-magic-sparkles', name:'স্পার্কল',  size:16, opacity:.5,  anim:'tbStarTwinkle 2.1s ease-in-out infinite',  group:'basic' },
+  feather: { icon:'fa-solid fa-feather',             name:'পালক',      size:18, opacity:.4,  anim:'tbFeatherSway 4.5s ease-in-out infinite',  group:'basic' },
+  // -- new additions --
+  sun:      { icon:'fa-solid fa-sun',               name:'সূর্য',       size:19, opacity:.4,  anim:'tbMoonFloat 4.5s ease-in-out infinite',   group:'new' },
+  cloud:    { icon:'fa-solid fa-cloud',             name:'মেঘ',         size:20, opacity:.38, anim:'tbFlowerDrift 6s ease-in-out infinite',   group:'new' },
+  crescent: { icon:'fa-solid fa-star-and-crescent', name:'চাঁদ-তারা',   size:20, opacity:.46, anim:'tbMoonFloat 4.2s ease-in-out infinite',   group:'new' },
+  mosque:   { icon:'fa-solid fa-mosque',            name:'মসজিদ',       size:20, opacity:.4,  anim:'tbFeatherSway 5s ease-in-out infinite',   group:'new' },
+  gem:      { icon:'fa-solid fa-gem',               name:'রত্ন',        size:16, opacity:.44, anim:'tbStarTwinkle 2.8s ease-in-out infinite', group:'new' },
+  crown:    { icon:'fa-solid fa-crown',             name:'মুকুট',       size:18, opacity:.4,  anim:'tbLanternSwing 3.6s ease-in-out infinite', group:'new' }
 };
 const TB_DECOR_MAX_PER_TYPE = 6;
 const TB_DECOR_MAX_TOTAL = 18;
@@ -180,11 +191,12 @@ function tbApplyAmbient(cfg){
     const meta = TB_DECOR_TYPES[inst.type];
     if(!meta) return;
     const span = document.createElement('span');
-    span.textContent = meta.emoji;
+    span.innerHTML = `<i class="${meta.icon}"></i>`;
     span.style.position = 'absolute';
     span.style.top = inst.top + '%';
     span.style.left = inst.left + '%';
     span.style.fontSize = meta.size + 'px';
+    span.style.color = 'var(--gold)';
     span.style.lineHeight = '1';
     span.style.opacity = meta.opacity;
     span.style.animation = meta.anim;
@@ -455,7 +467,14 @@ function tbCheckRow(id, emoji, label, desc, checked){
 // decoration is a real emoji span the user can drag anywhere inside it.
 // Position is stored as a 0-100 percentage so it maps directly onto the
 // real full-screen layer via tbApplyAmbient().
-function tbMakeDraggable(el, container, onMove){
+// NOTE (bug fix): onMove used to trigger a full tbPreview() on every single
+// pointermove — that re-applies CSS vars, re-registers the theme, re-renders
+// fonts/patterns/home-sections/player/nav/modal, all just to move one dot.
+// On a phone that's heavy enough per-frame that the dot visually lags or
+// looks "stuck", which is why dragging felt broken. Now onMove only updates
+// the dot's own position (cheap, instant), and the expensive full sync
+// (onEnd) runs once when the finger/mouse is lifted.
+function tbMakeDraggable(el, container, onMove, onEnd){
   let dragging = false;
   const move = (clientX, clientY) => {
     const rect = container.getBoundingClientRect();
@@ -479,29 +498,35 @@ function tbMakeDraggable(el, container, onMove){
     if(!dragging) return;
     dragging = false;
     el.classList.remove('tb-dragging');
+    if(onEnd) onEnd();
   };
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', end);
 }
 
-function tbRenderDecorSection(){
+function tbRenderDecorChips(groupKey){
   const countsByType = {};
   tbDraft.decorations.forEach(d => { countsByType[d.type] = (countsByType[d.type]||0) + 1; });
-
-  const chipsHtml = Object.keys(TB_DECOR_TYPES).map(type => {
+  return Object.keys(TB_DECOR_TYPES).filter(type => TB_DECOR_TYPES[type].group === groupKey).map(type => {
     const meta = TB_DECOR_TYPES[type];
     const count = countsByType[type] || 0;
-    return `<div class="tb-decor-chip" data-type="${type}">
-      <span class="tdc-emoji">${meta.emoji}</span>
+    const full = count >= TB_DECOR_MAX_PER_TYPE;
+    return `<div class="tb-decor-chip${full ? ' tb-decor-chip-full' : ''}" data-type="${type}" title="${meta.name}">
+      <span class="tdc-emoji"><i class="${meta.icon}"></i></span>
       <span class="tdc-name">${meta.name}</span>
       <span class="tdc-count">${toBn(count)}/${toBn(TB_DECOR_MAX_PER_TYPE)}</span>
-      <button type="button" class="tdc-add" data-add="${type}" title="যোগ করুন"><i class="fa-solid fa-plus"></i></button>
+      <button type="button" class="tdc-add" data-add="${type}" title="${meta.name} যোগ করুন"><i class="fa-solid fa-plus"></i></button>
     </div>`;
   }).join('');
+}
 
+function tbRenderDecorSection(){
   return `
-    <div class="tb-decor-chip-grid" id="tbDecorChipGrid">${chipsHtml}</div>
-    <div class="tb-decor-hint"><i class="fa-solid fa-hand-pointer"></i> "+" চাপুন যোগ করতে, তারপর প্রিভিউতে টেনে জায়গা ঠিক করুন। মুছতে আইটেমের ✕ চাপুন।</div>
+    <div class="tb-decor-group-label">মৌলিক আইকন</div>
+    <div class="tb-decor-chip-grid" id="tbDecorChipGridBasic">${tbRenderDecorChips('basic')}</div>
+    <div class="tb-decor-group-label">নতুন সংযোজন</div>
+    <div class="tb-decor-chip-grid" id="tbDecorChipGridNew">${tbRenderDecorChips('new')}</div>
+    <div class="tb-decor-hint"><i class="fa-solid fa-hand-pointer"></i> <span><i class="fa-solid fa-plus"></i> চাপুন আইকন যোগ করতে, তারপর নিচের প্রিভিউতে টেনে জায়গা ঠিক করুন। মুছতে আইটেমের ✕ চাপুন। মোট সর্বোচ্চ ${toBn(TB_DECOR_MAX_TOTAL)}টি, প্রতিটি আইকন সর্বোচ্চ ${toBn(TB_DECOR_MAX_PER_TYPE)}টি।</span></div>
     <div class="tb-decor-preview" id="tbDecorPreview"></div>
   `;
 }
@@ -520,18 +545,24 @@ function tbRenderDecorPreview(){
     dot.className = 'tb-decor-dot';
     dot.style.top = inst.top + '%';
     dot.style.left = inst.left + '%';
-    dot.innerHTML = `<span class="tdd-emoji" style="font-size:${Math.min(meta.size,20)}px">${meta.emoji}</span><button type="button" class="tdd-remove" data-remove="${inst.id}">✕</button>`;
+    dot.innerHTML = `<span class="tdd-emoji" style="font-size:${Math.min(meta.size,20)}px"><i class="${meta.icon}"></i></span><button type="button" class="tdd-remove" data-remove="${inst.id}">✕</button>`;
     preview.appendChild(dot);
+    // Live move: only touches this dot's own inline position (cheap, instant
+    // feedback). The expensive full-app sync (tbApplyAmbient) runs once the
+    // drag ends, not on every pointermove — see tbMakeDraggable's note.
     tbMakeDraggable(dot, preview, (top, left) => {
       inst.top = Math.round(top);
       inst.left = Math.round(left);
-      tbPreview();
+      dot.style.top = inst.top + '%';
+      dot.style.left = inst.left + '%';
+    }, () => {
+      tbApplyAmbient(tbDraft);
     });
     dot.querySelector('.tdd-remove').onclick = (e) => {
       e.stopPropagation();
       tbDraft.decorations = tbDraft.decorations.filter(d => d.id !== inst.id);
       tbRenderDecorSection2();
-      tbPreview();
+      tbApplyAmbient(tbDraft);
     };
   });
 }
@@ -545,7 +576,7 @@ function tbRenderDecorSection2(){
   tbWireDecorSection();
 }
 function tbWireDecorSection(){
-  document.querySelectorAll('#tbDecorChipGrid .tdc-add').forEach(btn => {
+  document.querySelectorAll('#tbDecorChipGridBasic .tdc-add, #tbDecorChipGridNew .tdc-add').forEach(btn => {
     btn.onclick = () => {
       const type = btn.getAttribute('data-add');
       const countForType = tbDraft.decorations.filter(d => d.type === type).length;
@@ -729,10 +760,10 @@ function openThemeBuilder(){
   // ---- Home sections ----
   const homeWrap = document.getElementById('tbHomeChecks');
   homeWrap.innerHTML = [
-    tbCheckRow('tbHomeAyah', '📖', 'আজকের আয়াত কার্ড', 'হোমপেজের উপরে আয়াত কার্ড', tbDraft.homeSections.ayah),
-    tbCheckRow('tbHomeStreak', '🔥', 'স্ট্রিক রিং', 'পড়ার ধারাবাহিকতার রিং', tbDraft.homeSections.streak),
-    tbCheckRow('tbHomeLastRead', '🕓', 'সর্বশেষ পড়া', '"সর্বশেষ পড়েছিলেন" সারি', tbDraft.homeSections.lastread),
-    tbCheckRow('tbHomeQuick', '🔗', 'কুইক লিংক', 'কুইক লিংক সারি', tbDraft.homeSections.quicklinks)
+    tbCheckRow('tbHomeAyah', '<i class="fa-solid fa-book-open"></i>', 'আজকের আয়াত কার্ড', 'হোমপেজের উপরে আয়াত কার্ড', tbDraft.homeSections.ayah),
+    tbCheckRow('tbHomeStreak', '<i class="fa-solid fa-fire"></i>', 'স্ট্রিক রিং', 'পড়ার ধারাবাহিকতার রিং', tbDraft.homeSections.streak),
+    tbCheckRow('tbHomeLastRead', '<i class="fa-solid fa-clock-rotate-left"></i>', 'সর্বশেষ পড়া', '"সর্বশেষ পড়েছিলেন" সারি', tbDraft.homeSections.lastread),
+    tbCheckRow('tbHomeQuick', '<i class="fa-solid fa-link"></i>', 'কুইক লিংক', 'কুইক লিংক সারি', tbDraft.homeSections.quicklinks)
   ].join('');
   const homeMap = { tbHomeAyah:'ayah', tbHomeStreak:'streak', tbHomeLastRead:'lastread', tbHomeQuick:'quicklinks' };
   Object.keys(homeMap).forEach(id => {
