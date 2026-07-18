@@ -93,14 +93,16 @@
 .tb-hide-section{display:none !important;}
 
 /* ==== Decoration picker v2: type chips + draggable mini preview ==== */
-.tb-decor-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.tb-decor-group-label{font-size:11px;font-weight:600;color:var(--ink-soft);margin:2px 2px 6px;text-transform:uppercase;letter-spacing:.3px;}
+.tb-decor-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .tb-decor-chip{
   display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:12px;
   padding:8px 8px;background:var(--panel);
 }
-.tdc-emoji{font-size:17px;}
+.tb-decor-chip-full{opacity:.6;}
+.tdc-emoji{font-size:16px;color:var(--gold);width:18px;text-align:center;flex-shrink:0;}
 .tdc-name{font-size:12px;color:var(--ink);flex:1;min-width:0;}
-.tdc-count{font-size:10.5px;color:var(--ink-soft);}
+.tdc-count{font-size:10.5px;color:var(--ink-soft);flex-shrink:0;}
 .tdc-add{
   border:none;background:var(--gold-soft);color:var(--gold);width:24px;height:24px;border-radius:50%;
   flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;
@@ -110,7 +112,7 @@
 .tb-decor-hint i{color:var(--gold);margin-top:2px;flex-shrink:0;}
 .tb-decor-preview{
   position:relative;width:100%;height:180px;border:1.5px dashed var(--line);border-radius:16px;
-  overflow:hidden;margin-bottom:14px;background:var(--parchment);
+  overflow:hidden;margin-bottom:14px;background:var(--parchment);touch-action:none;
 }
 .tb-decor-preview-bar{position:absolute;top:0;left:0;right:0;height:16px;opacity:.9;}
 .tb-decor-dot{
@@ -118,7 +120,7 @@
   cursor:grab;touch-action:none;user-select:none;
 }
 .tb-decor-dot.tb-dragging{cursor:grabbing;z-index:2;}
-.tdd-emoji{filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));}
+.tdd-emoji{color:var(--gold);filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));}
 .tdd-remove{
   border:none;background:rgba(0,0,0,.55);color:#fff;width:15px;height:15px;border-radius:50%;
   font-size:8px;line-height:1;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
