@@ -27,7 +27,7 @@ const THEMES = [
 
 // Bump the version suffix any time app-shell files change so the service
 // worker picks up a fresh copy instead of serving a stale cached version.
-const SW_VERSION = 'v52';
+const SW_VERSION = 'v53';
 const SHELL_CACHE_NAME = `qr-shell-${SW_VERSION}`;
 const API_CACHE_NAME = `qr-api-${SW_VERSION}`;
 const AUDIO_CACHE_NAME = `qr-audio-${SW_VERSION}`;
@@ -137,8 +137,28 @@ const reciters = [
   { id: 'ar.shaatree', name: 'Abu Bakr Ash-Shatri', bn: 'আবু বকর আশ-শাত্বরী', flag: '🇸🇦', style: 'মুরাত্তাল · প্রাণবন্ত সুর' },
   { id: 'ar.mahermuaiqly', name: 'Maher Al-Muaiqly', bn: 'মাহের আল-মুয়াইক্বিলী', flag: '🇸🇦', style: 'মুরাত্তাল · মক্কার ইমাম' },
   { id: 'ar.ahmedajamy', name: 'Ahmed Al-Ajamy', bn: 'আহমাদ বিন আলী আল-আজামী', flag: '🇸🇦', style: 'মুরাত্তাল · দ্রুতগতির তিলাওয়াত' },
-  { id: 'ar.muhammadayyoub', name: 'Muhammad Ayyoub', bn: 'মুহাম্মাদ আইয়্যুব', flag: '🇸🇦', style: 'মুরাত্তাল · মদীনার ইমাম' }
+  { id: 'ar.muhammadayyoub', name: 'Muhammad Ayyoub', bn: 'মুহাম্মাদ আইয়্যুব', flag: '🇸🇦', style: 'মুরাত্তাল · মদীনার ইমাম' },
+  // ইয়াসির আল-দোসারী (Yasser Al Dosari): এই ক্বারীর তিলাওয়াত cdn.islamic.network-এ
+  // আয়াত-ভিত্তিক (per-ayah) ফাইল আকারে নেই — শুধু সম্পূর্ণ সূরা আকারে (mp3quran.net
+  // CDN-এ) পাওয়া যায়। তাই audioType:'surah' দিয়ে চিহ্নিত করা হয়েছে; buildAudioUrl()
+  // (নিচে দেখুন) এই ফ্ল্যাগ অনুযায়ী পুরো সূরার mp3 লিংক বানায়, আয়াত-নম্বর অনুযায়ী নয়।
+  {
+    id: 'ar.yasseraldosari', name: 'Yasser Al Dosari', bn: 'ইয়াসির আল-দোসারী', flag: '🇸🇦',
+    style: 'মুরাত্তাল · মক্কার হারামের ইমাম', audioType: 'surah', surahBase: 'https://server11.mp3quran.net/download/yasser'
+  }
 ];
+
+// একটি নির্দিষ্ট আয়াতের (বা, আয়াত-ভিত্তিক অডিও না থাকলে, পুরো সূরার) অডিও mp3
+// লিংক বানানোর একক জায়গা — player.js ও js/download-manager.js দুটোই এখান থেকে
+// URL নেয়, যাতে নতুন কোনো "সম্পূর্ণ-সূরা-শুধু" ক্বারী যোগ করলে দুই জায়গায় আলাদা
+// করে কোড লিখতে না হয়।
+function buildAudioUrl(reciterId, surahNum, globalNumber){
+  const r = reciters.find(x => x.id === reciterId);
+  if(r && r.audioType === 'surah'){
+    return `${r.surahBase}/${String(surahNum).padStart(3,'0')}.mp3`;
+  }
+  return `${AUDIO_CDN}/${reciterId}/${globalNumber}.mp3`;
+}
 
 
 // ---------- Social / share links ----------
