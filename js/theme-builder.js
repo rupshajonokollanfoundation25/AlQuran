@@ -396,20 +396,20 @@ function appendCustomThemeCard(grid, t){
     card.innerHTML = `
       <span class="theme-picker-swatch tb-locked-swatch"><i class="fa-solid fa-lock"></i></span>
       <span class="theme-picker-name">${t('theme_custom')}</span>
-      <span class="theme-picker-desc">৩০ দিনের রিডিং স্ট্রিক প্রয়োজন (${toBn(streak)}/৩০ দিন) — রঙ, ফন্ট, ব্যাকগ্রাউন্ড, ডেকোরেশন, প্লেয়ার, হেডার-ন্যাভ ও পপ-আপ ডিজাইন সহ সম্পূর্ণ অ্যাপ কাস্টমাইজেশন আনলক হবে</span>`;
-    card.onclick = () => showToast(`আর ${toBn(Math.max(0, 30-streak))} দিন পড়লে প্রিমিয়াম কাস্টমাইজেশন আনলক হবে`);
+      <span class="theme-picker-desc">You are not yet eligible for a custom theme. Your progress is (${toBn(streak)}/৩০ day) </span>`;
+    card.onclick = () => showToast(` ${toBn(Math.max(0, 30-streak))} Premium customization will be unlocked as the day progresses.`);
   } else if(!cfg){
     card.innerHTML = `
       <span class="theme-picker-swatch tb-add-swatch"><i class="fa-solid fa-palette"></i></span>
       <span class="theme-picker-name">${t('theme_custom')} <i class="fa-solid fa-lock-open"></i></span>
-      <span class="theme-picker-desc">রঙ, ফন্ট, ব্যাকগ্রাউন্ড, ডেকোরেশন, প্লেয়ার, হেডার-ন্যাভ ও পপ-আপ — পুরো অ্যাপ নিজের মনমতো সাজান</span>`;
+      <span class="theme-picker-desc"> Dear reader, you have access to custom themes with the user.</span>`;
     card.onclick = () => openThemeBuilder();
   } else {
     const active = state.theme === 'custom';
     card.classList.toggle('active', active);
     card.innerHTML = `
       <span class="theme-picker-swatch">${[cfg.parchment, cfg.teal, cfg.gold].map(c => `<span style="background:${c}"></span>`).join('')}</span>
-      <span class="theme-picker-name">${t('theme_custom')}${active ? ' <i class="fa-solid fa-circle-check"></i>' : ''} <button type="button" class="tb-edit-btn" title="সম্পাদনা করুন"><i class="fa-solid fa-pen"></i></button></span>
+      <span class="theme-picker-name">${t('theme_custom')}${active ? ' <i class="fa-solid fa-circle-check"></i>' : ''} <button type="button" class="tb-edit-btn" title="edit"><i class="fa-solid fa-pen"></i></button></span>
       <span class="theme-picker-desc">${t('theme_custom_desc')}</span>`;
     card.onclick = (e) => { if(e.target.closest('.tb-edit-btn')) return; applyTheme('custom'); };
   }
@@ -464,7 +464,7 @@ function tbSave(){
   tbApplyPlayer(tbDraft);
   tbApplyNavHeader(tbDraft);
   tbApplyModal(tbDraft);
-  showToast('প্রিমিয়াম কাস্টমাইজেশন সংরক্ষিত হয়েছে ✓');
+  showToast('Your custom theme has been saved. ✓');
 }
 
 function tbFieldRow(id, label, value){
