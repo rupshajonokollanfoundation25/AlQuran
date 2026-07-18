@@ -212,68 +212,119 @@
       <h3 data-i18n="settings_title">সেটিংস</h3>
       <button class="app-modal-close" id="settingsClose">✕</button>
     </div>
-    <div class="app-modal-body">
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_language">ভাষা</div>
-        <div class="settings-control">
-          <button class="settings-btn" id="settingsLanguageBtn"><i class="fa-solid fa-language"></i> <span id="settingsLanguageLabel">বাংলা</span></button>
+    <div class="app-modal-body settings-body">
+
+      <div class="settings-section">
+        <div class="settings-section-title"><i class="fa-solid fa-globe"></i> ভাষা ও অনুবাদ</div>
+        <div class="settings-section-card">
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-language"></i></span>
+              <div class="settings-label" data-i18n="settings_language">ভাষা</div>
+            </div>
+            <div class="settings-control">
+              <button class="settings-btn" id="settingsLanguageBtn"><span id="settingsLanguageLabel">বাংলা</span> <i class="fa-solid fa-chevron-right settings-chevron"></i></button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-book-quran"></i></span>
+              <div class="settings-label" data-i18n="settings_translation">কুরআনের অনুবাদের ভাষা</div>
+            </div>
+            <div class="settings-control">
+              <button class="settings-btn" id="settingsTranslationBtn"><span id="settingsTranslationLabel">বাংলা</span> <i class="fa-solid fa-chevron-right settings-chevron"></i></button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-layer-group"></i></span>
+              <div class="settings-label">তুলনামূলক অনুবাদ <span class="settings-subnote">পাশাপাশি, সর্বোচ্চ ৩টি</span></div>
+            </div>
+            <div class="settings-control">
+              <button class="settings-btn" id="settingsCompareTrBtn"><span id="settingsCompareTrLabel">বন্ধ</span> <i class="fa-solid fa-chevron-right settings-chevron"></i></button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_translation">কুরআনের অনুবাদের ভাষা</div>
-        <div class="settings-control">
-          <button class="settings-btn" id="settingsTranslationBtn"><i class="fa-solid fa-book-quran"></i> <span id="settingsTranslationLabel">বাংলা</span></button>
+
+      <div class="settings-section">
+        <div class="settings-section-title"><i class="fa-solid fa-microphone-lines"></i> তিলাওয়াত ও পাঠ</div>
+        <div class="settings-section-card">
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-microphone-lines"></i></span>
+              <div class="settings-label" data-i18n="settings_reciter">ডিফল্ট ক্বারী</div>
+            </div>
+            <div class="settings-control">
+              <button class="settings-btn" id="settingsReciterBtn"><span id="settingsReciterLabel">…</span> <i class="fa-solid fa-chevron-right settings-chevron"></i></button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-text-height"></i></span>
+              <div class="settings-label" data-i18n="settings_font">ফন্ট সাইজ</div>
+            </div>
+            <div class="settings-control settings-stepper">
+              <button class="icon-btn" id="settingsDecFont" aria-label="ফন্ট ছোট করুন">−</button>
+              <button class="icon-btn" id="settingsIncFont" aria-label="ফন্ট বড় করুন">+</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-highlighter"></i></span>
+              <div class="settings-label">তাজভীদ হাইলাইট <span class="settings-subnote">আনুমানিক, শেখার সহায়ক</span></div>
+            </div>
+            <div class="settings-control">
+              <label class="switch"><input type="checkbox" id="settingsTajweedMode"><span class="switch-slider"></span></label>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="settings-row">
-        <div class="settings-label">তুলনামূলক অনুবাদ <span class="settings-subnote">(পাশাপাশি, সর্বোচ্চ ৩টি)</span></div>
-        <div class="settings-control">
-          <button class="settings-btn" id="settingsCompareTrBtn"><i class="fa-solid fa-layer-group"></i> <span id="settingsCompareTrLabel">বন্ধ</span></button>
+
+      <div class="settings-section">
+        <div class="settings-section-title"><i class="fa-solid fa-palette"></i> চেহারা</div>
+        <div class="settings-section-card">
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-palette"></i></span>
+              <div class="settings-label" data-i18n="settings_theme">থিম</div>
+            </div>
+            <div class="settings-control">
+              <button class="settings-btn" id="settingsThemeBtn"><span id="settingsThemeLabel">পান্না</span> <i class="fa-solid fa-chevron-right settings-chevron"></i></button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="settings-row">
-        <div class="settings-label">তাজভীদ হাইলাইট <span class="settings-subnote">(আনুমানিক, শেখার সহায়ক)</span></div>
-        <div class="settings-control">
-          <label class="switch"><input type="checkbox" id="settingsTajweedMode"><span class="switch-slider"></span></label>
+
+      <div class="settings-section">
+        <div class="settings-section-title"><i class="fa-solid fa-clock"></i> নামাজ</div>
+        <div class="settings-section-card">
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-kaaba"></i></span>
+              <div class="settings-label" data-i18n="settings_prayer_method">নামাজের সময় হিসাবের পদ্ধতি</div>
+            </div>
+            <div class="settings-control">
+              <select id="settingsPrayerMethod"></select>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-bell"></i></span>
+              <div class="settings-label" data-i18n="settings_prayer_notify">নামাজের সময় বিজ্ঞপ্তি</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch"><input type="checkbox" id="settingsPrayerNotify"><span class="switch-slider"></span></label>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_theme">থিম</div>
-        <div class="settings-control">
-          <button class="settings-btn" id="settingsThemeBtn"><i class="fa-solid fa-palette"></i> <span id="settingsThemeLabel">পান্না</span></button>
+
+      <div class="settings-section">
+        <div class="settings-section-title"><i class="fa-solid fa-moon"></i> বিশেষ মোড</div>
+        <div class="settings-section-card">
+          <div class="settings-row">
+            <div class="settings-row-lead"><span class="settings-row-ic"><i class="fa-solid fa-moon"></i></span>
+              <div class="settings-label">রমজান মোড</div>
+            </div>
+            <div class="settings-control">
+              <label class="switch"><input type="checkbox" id="settingsRamadanMode"><span class="switch-slider"></span></label>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_reciter">ডিফল্ট ক্বারী</div>
-        <div class="settings-control">
-          <button class="settings-btn" id="settingsReciterBtn"><i class="fa-solid fa-microphone-lines"></i> <span id="settingsReciterLabel">…</span></button>
-        </div>
-      </div>
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_font">ফন্ট সাইজ</div>
-        <div class="settings-control">
-          <button class="icon-btn" id="settingsDecFont">−</button>
-          <button class="icon-btn" id="settingsIncFont">+</button>
-        </div>
-      </div>
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_prayer_method">নামাজের সময় হিসাবের পদ্ধতি</div>
-        <div class="settings-control">
-          <select id="settingsPrayerMethod"></select>
-        </div>
-      </div>
-      <div class="settings-row">
-        <div class="settings-label" data-i18n="settings_prayer_notify">নামাজের সময় বিজ্ঞপ্তি</div>
-        <div class="settings-control">
-          <label class="switch"><input type="checkbox" id="settingsPrayerNotify"><span class="switch-slider"></span></label>
-        </div>
-      </div>
-      <div class="settings-row">
-        <div class="settings-label">🌙 রমজান মোড</div>
-        <div class="settings-control">
-          <label class="switch"><input type="checkbox" id="settingsRamadanMode"><span class="switch-slider"></span></label>
-        </div>
-      </div>
+
     </div>
   </div>
 </div>
